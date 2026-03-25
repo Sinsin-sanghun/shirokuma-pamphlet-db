@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ãã³ãã¬ããDB - ãããã¾é»å</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg-primary: #0f0f23;
+  --bg-secondary: #1a1a2e;
+  --bg-card: #16213e;
+  --bg-hover: #1e2d4a;
+  --accent: #4fc3f7;
+  --accent-hover: #81d4fa;
+  --text-primary: #e0e0e0;
+  --text-secondary: #999;
+  --text-muted: #666;
+  --border: #2a2a4a;
+  --sidebar-width: 280px;
+  --header-height: 60px;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:'Noto Sans JP','Segoe UI',sans-serif; background:var(--bg-primary); color:var(--text-primary); overflow:hidden; height:100vh; }
+
+/* Header */
+.header {
+  height:var(--header-height); background:var(--bg-secondary); border-bottom:1px solid var(--border);
+  display:flex; align-items:center; padding:0 24px; position:fixed; top:0; left:0; right:0; z-index:100;
+}
+.header-logo { font-size:18px; font-weight:700; color:var(--accent); white-space:nowrap; }
+.header-logo span { color:var(--text-primary); font-weight:400; margin-left:8px; font-size:14px; }
+.header-search {
+  flex:1; max-width:480px; margin:0 32px; position:relative;
+}
+.header-search input {
+  width:100%; padding:8px 16px 8px 40px; border-radius:8px; border:1px solid var(--border);
+  background:var(--bg-primary); color:var(--text-primary); font-size:14px; outline:none;
+  transition:border-color 0.2s;
+}
+.header-search input:focus { border-color:var(--accent); }
+.header-search svg { position:absolute; left:12px; top:50%; transform:translateY(-50%); color:var(--text-muted); }
+.header-count { font-size:13px; color:var(--text-secondary); white-space:nowrap; }
+
+/* Layout */
+.layout { display:flex; height:calc(100vh - var(--header-height)); margin-top:var(--header-height); }
+
+/* Sidebar */
+.sidebar {
+  width:var(--sidebar-width); min-width:var(--sidebar-width); background:var(--bg-secondary);
+  border-right:1px solid var(--border); overflow-y:auto; padding:16px 0;
+}
+.sidebar-section { padding:0 16px; margin-bottom:8px; }
+.sidebar-section-title { font-size:11px; font-weight:600; color:var(--text-muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:8px; }
+.sidebar-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:10px 16px; cursor:pointer; border-radius:0; font-size:13px;
+  transition:all 0.15s; border-left:3px solid transparent;
+}
+.sidebar-item:hover { background:var(--bg-hover); }
+.sidebar-item.active { background:var(--bg-card); border-left-color:var(--accent); color:var(--accent); }
+.sidebar-item .count {
+  font-size:11px; background:var(--bg-primary); color:var(--text-secondary);
+  padding:2px 8px; border-radius:10px; min-width:28px; text-align:center;
+}
+.sidebar-item.active .count { background:rgba(79,195,247,0.15); color:var(--accent); }
+
+/* Main Content */
+.main { flex:1; overflow-y:auto; padding:24px; }
+.main-title { font-size:20px; font-weight:600; margin-bottom:4px; }
+.main-subtitle { font-size:13px; color:var(--text-secondary); margin-bottom:20px; }
+
+/* Filter bar */
+.filter-bar { display:flex; gap:8px; margin-bottom:20px; flex-wrap:wrap; align-items:center; }
+.filter-btn {
+  padding:6px 14px; border-radius:20px; border:1px solid var(--border); background:transparent;
+  color:var(--text-secondary); font-size:12px; cursor:pointer; transition:all 0.15s; font-family:inherit;
+}
+.filter-btn:hover { border-color:var(--accent); color:var(--accent); }
+.filter-btn.active { background:var(--accent); color:var(--bg-primary); border-color:var(--accent); font-weight:600; }
+.sort-select {
+  margin-left:auto; padding:6px 12px; border-radius:8px; border:1px solid var(--border);
+  background:var(--bg-secondary); color:var(--text-primary); font-size:12px; font-family:inherit; cursor:pointer;
+}
+
+/* Cards grid */
+.cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; }
+.card {
+  background:var(--bg-card); border-radius:10px; padding:20px; cursor:pointer;
+  border:1px solid transparent; transition:all 0.2s;
+}
+.card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,0,0,0.3); }
+.card-title { font-size:14px; font-weight:600; line-height:1.5; margin-bottom:8px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+.card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px; }
+.card-tag {
+  font-size:11px; padding:2px 8px; border-radius:4px; background:rgba(79,195,247,0.1); color:var(--accent);
+}
+.card-mfr { font-size:11px; padding:2px 8px; border-radius:4px; background:rgba(102,187,106,0.1); color:#66bb6a; }
+.card-info { font-size:12px; color:var(--text-muted); display:flex; gap:12px; }
+.card-info span { display:flex; align-items:center; gap:4px; }
+
+/* PDF Viewer Modal */
+.modal-overlay {
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,0.85); z-index:200; justify-content:center; align-items:center;
+}
+.modal-overlay.active { display:flex; }
+.modal {
+  background:var(--bg-secondary); border-radius:12px; width:90vw; height:90vh;
+  display:flex; flex-direction:column; overflow:hidden;
+}
+.modal-header {
+  display:flex; align-items:center; justify-content:space-between; padding:16px 20px;
+  border-bottom:1px solid var(--border); min-height:56px;
+}
+.modal-title { font-size:14px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:16px; }
+.modal-actions { display:flex; gap:8px; }
+.modal-btn {
+  padding:8px 16px; border-radius:6px; border:1px solid var(--border); background:transparent;
+  color:var(--text-primary); font-size:13px; cursor:pointer; transition:all 0.15s; font-family:inherit;
+  text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+}
+.modal-btn:hover { border-color:var(--accent); color:var(--accent); }
+.modal-btn.close { background:#ef5350; color:#fff; border-color:#ef5350; }
+.modal-btn.close:hover { background:#f44336; }
+.modal-body { flex:1; }
+.modal-body iframe { width:100%; height:100%; border:none; }
+
+/* Empty state */
+.empty-state { text-align:center; padding:60px 20px; color:var(--text-muted); }
+.empty-state svg { margin-bottom:16px; opacity:0.3; }
+.empty-state p { font-size:14px; }
+
+/* Scrollbar */
+::-webkit-scrollbar { width:6px; }
+::-webkit-scrollbar-track { background:transparent; }
+::-webkit-scrollbar-thumb { background:var(--border); border-radius:3px; }
+::-webkit-scrollbar-thumb:hover { background:#444; }
+
+/* Responsive */
+@media (max-width:768px) {
+  .sidebar { display:none; }
+  .cards { grid-template-columns:1fr; }
+  .modal { width:98vw; height:95vh; }
+}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-logo">ãã³ãã¬ããDB<span>ãããã¾é»å</span></div>
+  <div class="header-search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" id="searchInput" placeholder="ã¿ã¤ãã«ã»ã¡ã¼ã«ã¼ã»ãã¡ã¤ã«åã§æ¤ç´¢..." oninput="handleSearch()">
+  </div>
+  <div class="header-count" id="headerCount"></div>
+</header>
+
+<div class="layout">
+  <nav class="sidebar" id="sidebar"></nav>
+  <main class="main" id="main">
+    <h2 class="main-title" id="mainTitle">ãã¹ã¦ã®ãã³ãã¬ãã</h2>
+    <p class="main-subtitle" id="mainSubtitle"></p>
+    <div class="filter-bar" id="filterBar"></div>
+    <div class="cards" id="cards"></div>
+  </main>
+</div>
+
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-header">
+      <div class="modal-title" id="modalTitle"></div>
+      <div class="modal-actions">
+        <a class="modal-btn" id="modalDownload" href="#" target="_blank">æ°ããã¿ãã§éã</a>
+        <button class="modal-btn close" onclick="closeModal()">éãã</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="pdfFrame" src=""></iframe>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = 'https://manowprcyrfqonzdoqja.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbm93cHJjeXJmcW9uemRvcWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMTU5NDIsImV4cCI6MjA4ODc5MTk0Mn0.eZ9UHW041t85kLBglI_CK6p0uX5dRVMbWyJO0oR50Kc';
+
+let allData = [];
+let currentCategory = null;
+let currentManufacturer = null;
+let searchQuery = '';
+let sortBy = 'title';
+
+const CATEGORY_ICONS = {
+  'BESSã»èé»æ± ': 'ð', 'PCSã»ãã¯ã³ã³': 'â¡', 'å¤ªé½åçºé»': 'âï¸', 'é¢¨åçºé»': 'ð',
+  'æ´ä¸é¢¨åã»æµ·äº': 'ð¢', 'åå¤é»è¨­åã»é»æ°æ©å¨': 'ð', 'EMSã»ç£è¦å¶å¾¡': 'ð',
+  'æè¡åè­°æ¸ã»ä»æ§æ¸': 'ð', 'èªè¨¼ã»è©¦é¨ã¬ãã¼ã': 'â', 'é»æ°å³é¢ã»SLD': 'ð',
+  'é¨åå³é¢ã»åçªè³æ': 'ð©', 'é¨é³ã¬ãã¼ã': 'ð', 'å®å¨ã»æ¶é²': 'ð§¯',
+  'O&Mã»ã¡ã³ããã³ã¹': 'ð§', 'å±ç¤ºä¼ã»EXPO': 'ðï¸', 'ã¬ã¤ã¢ã¦ãã»éç½®å³': 'ð',
+  'ãã®ä»': 'ð'
+};
+
+async function fetchData() {
+  const resp = await fetch(SUPABASE_URL + '/rest/v1/pamphlets?select=*&order=title', {
+    headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
+  });
+  allData = await resp.json();
+  document.getElementById('headerCount').textContent = allData.length + 'ä»¶ã®ãã³ãã¬ãã';
+  buildSidebar();
+  render();
+}
+
+function buildSidebar() {
+  const cats = {};
+  allData.forEach(r => { cats[r.category] = (cats[r.category] || 0) + 1; });
+  const sorted = Object.entries(cats).sort((a, b) => b[1] - a[1]);
+  const total = allData.length;
+
+  let html = '<div class="sidebar-section"><div class="sidebar-section-title">ã«ãã´ãª</div></div>';
+  html += `<div class="sidebar-item ${!currentCategory ? 'active' : ''}" onclick="selectCategory(null)">
+    <span>ð ãã¹ã¦</span><span class="count">${total}</span></div>`;
+  sorted.forEach(([cat, count]) => {
+    const icon = CATEGORY_ICONS[cat] || 'ð';
+    const active = currentCategory === cat ? 'active' : '';
+    html += `<div class="sidebar-item ${active}" onclick="selectCategory('${cat.replace(/'/g, "\\'")}')">
+      <span>${icon} ${cat}</span><span class="count">${count}</span></div>`;
+  });
+
+  document.getElementById('sidebar').innerHTML = html;
+}
+
+function selectCategory(cat) {
+  currentCategory = cat;
+  currentManufacturer = null;
+  buildSidebar();
+  render();
+}
+
+function getFiltered() {
+  let data = allData;
+  if (currentCategory) data = data.filter(r => r.category === currentCategory);
+  if (currentManufacturer) data = data.filter(r => r.manufacturer === currentManufacturer);
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    data = data.filter(r =>
+      (r.title && r.title.toLowerCase().includes(q)) ||
+      (r.filename && r.filename.toLowerCase().includes(q)) ||
+      (r.manufacturer && r.manufacturer.toLowerCase().includes(q)) ||
+      (r.tags && r.tags.some(t => t.toLowerCase().includes(q)))
+    );
+  }
+  if (sortBy === 'title') data.sort((a, b) => (a.title || '').localeCompare(b.title || '', 'ja'));
+  else if (sortBy === 'size_desc') data.sort((a, b) => (b.file_size || 0) - (a.file_size || 0));
+  else if (sortBy === 'size_asc') data.sort((a, b) => (a.file_size || 0) - (b.file_size || 0));
+  else if (sortBy === 'manufacturer') data.sort((a, b) => (a.manufacturer || 'zzz').localeCompare(b.manufacturer || 'zzz', 'ja'));
+  return data;
+}
+
+function render() {
+  const data = getFiltered();
+  const title = currentCategory || 'ãã¹ã¦ã®ãã³ãã¬ãã';
+  document.getElementById('mainTitle').textContent = title;
+  document.getElementById('mainSubtitle').textContent = data.length + 'ä»¶' + (searchQuery ? ` (æ¤ç´¢: "${searchQuery}")` : '');
+
+  // Build manufacturer filter if category selected
+  let filterHtml = '';
+  if (currentCategory) {
+    const mfrs = {};
+    allData.filter(r => r.category === currentCategory).forEach(r => {
+      if (r.manufacturer) mfrs[r.manufacturer] = (mfrs[r.manufacturer] || 0) + 1;
+    });
+    if (Object.keys(mfrs).length > 0) {
+      filterHtml += `<button class="filter-btn ${!currentManufacturer ? 'active' : ''}" onclick="filterMfr(null)">ãã¹ã¦</button>`;
+      Object.entries(mfrs).sort((a, b) => b[1] - a[1]).forEach(([mfr, count]) => {
+        const active = currentManufacturer === mfr ? 'active' : '';
+        filterHtml += `<button class="filter-btn ${active}" onclick="filterMfr('${mfr.replace(/'/g, "\\'")}')">${mfr} (${count})</button>`;
+      });
+    }
+  }
+  filterHtml += `<select class="sort-select" onchange="changeSort(this.value)">
+    <option value="title" ${sortBy==='title'?'selected':''}>ã¿ã¤ãã«é </option>
+    <option value="size_desc" ${sortBy==='size_desc'?'selected':''}>ãã¡ã¤ã«ãµã¤ãº (å¤§âå°)</option>
+    <option value="size_asc" ${sortBy==='size_asc'?'selected':''}>ãã¡ã¤ã«ãµã¤ãº (å°âå¤§)</option>
+    <option value="manufacturer" ${sortBy==='manufacturer'?'selected':''}>ã¡ã¼ã«ã¼é </option>
+  </select>`;
+  document.getElementById('filterBar').innerHTML = filterHtml;
+
+  // Build cards
+  if (data.length === 0) {
+    document.getElementById('cards').innerHTML = `<div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      <p>è©²å½ãããã³ãã¬ãããè¦ã¤ããã¾ããã§ãã</p></div>`;
+    return;
+  }
+
+  let cardsHtml = '';
+  data.forEach(r => {
+    const size = formatSize(r.file_size);
+    const mfr = r.manufacturer ? `<span class="card-mfr">${esc(r.manufacturer)}</span>` : '';
+    const tags = (r.tags || []).map(t => `<span class="card-tag">${esc(t)}</span>`).join('');
+    const catTag = `<span class="card-tag">${esc(r.category)}</span>`;
+    cardsHtml += `<div class="card" onclick="openPdf('${esc(r.storage_url)}','${esc(r.title)}')">
+      <div class="card-title">${esc(r.title)}</div>
+      <div class="card-meta">${catTag}${mfr}${tags}</div>
+      <div class="card-info"><span>ð ${size}</span><span>ð ${esc(r.storage_key)}</span></div>
+    </div>`;
+  });
+  document.getElementById('cards').innerHTML = cardsHtml;
+}
+
+function filterMfr(mfr) { currentManufacturer = mfr; render(); }
+function changeSort(val) { sortBy = val; render(); }
+function handleSearch() {
+  searchQuery = document.getElementById('searchInput').value.trim();
+  render();
+}
+
+function openPdf(url, title) {
+  document.getElementById('modalTitle').textContent = title;
+  document.getElementById('pdfFrame').src = url;
+  document.getElementById('modalDownload').href = url;
+  document.getElementById('modalOverlay').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(e) {
+  if (e && e.target !== document.getElementById('modalOverlay')) return;
+  if (!e || e.target === document.getElementById('modalOverlay')) {
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.getElementById('pdfFrame').src = '';
+    document.body.style.overflow = '';
+  }
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+function formatSize(bytes) {
+  if (!bytes) return 'ä¸æ';
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1048576).toFixed(1) + ' MB';
+}
+
+function esc(s) {
+  if (!s) return '';
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+fetchData();
+</script>
+</body>
+</html>
