@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EXPO/展示会-パンフレットDB しろくま</title>
+<title>EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB ãããã¾</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -183,15 +183,15 @@ tbody tr:last-child td { border-bottom:none; }
 <body>
 
 <header class="header">
-  <div class="header-logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
+  <div class="header-logo">EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB<span>ãããã¾</span></div>
   <div class="header-search">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." onkeydown="if(event.key==='Enter')handleSearch()">
-    <button class="btn-search" onclick="handleSearch()">検索</button>
+    <input type="text" id="searchInput" placeholder="ã¿ã¤ãã«ã»ã¡ã¼ã«ã¼ã»ãã¡ã¤ã«åã§æ¤ç´¢..." onkeydown="if(event.key==='Enter')handleSearch()">
+    <button class="btn-search" onclick="handleSearch()">æ¤ç´¢</button>
   </div>
   <div class="header-right">
     <div class="header-count" id="headerCount"></div>
-    <button class="btn-excel" onclick="exportExcel()">📥 Excel出力</button>
+    <button class="btn-excel" onclick="exportExcel()">ð¥ Excelåºå</button>
   </div>
 </header>
 
@@ -200,12 +200,12 @@ tbody tr:last-child td { border-bottom:none; }
   <main class="main" id="main">
     <div class="main-header">
       <div class="main-title-area">
-        <h2 class="main-title" id="mainTitle">すべてのパンフレット</h2>
+        <h2 class="main-title" id="mainTitle">ãã¹ã¦ã®ãã³ãã¬ãã</h2>
         <span class="main-count" id="mainCount"></span>
       </div>
       <div class="view-toggle">
-        <button class="btn-toggle" id="btnCard" onclick="setView('card')">🃏 カード</button>
-        <button class="btn-toggle active" id="btnTable" onclick="setView('table')">📊 テーブル</button>
+        <button class="btn-toggle" id="btnCard" onclick="setView('card')">ð ã«ã¼ã</button>
+        <button class="btn-toggle active" id="btnTable" onclick="setView('table')">ð ãã¼ãã«</button>
       </div>
     </div>
     <div class="toolbar" id="toolbar"></div>
@@ -218,9 +218,9 @@ tbody tr:last-child td { border-bottom:none; }
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"></div>
       <div class="modal-actions">
-        <a class="modal-btn" id="modalDownload" href="#" target="_blank">新しいタブで開く</a>
-        <button class="modal-btn translate" id="modalTranslate" onclick="translatePdf()">Google翻訳で開く</button>
-        <button class="modal-btn close" onclick="closeModal()">閉じる</button>
+        <a class="modal-btn" id="modalDownload" href="#" target="_blank">æ°ããã¿ãã§éã</a>
+        <button class="modal-btn translate" id="modalTranslate" onclick="translatePdf()">Googleç¿»è¨³ã§éã</button>
+        <button class="modal-btn close" onclick="closeModal()">éãã</button>
       </div>
     </div>
     <div class="modal-body">
@@ -242,19 +242,19 @@ let sortBy = 'title';
 let viewMode = 'table';
 
 const CATEGORY_ICONS = {
-  'BESS・蓄電池': '🔋', 'PCS・パワコン': '⚡', '太陽光発電': '☀️', '風力発電': '🌀',
-  '洋上風力・海事': '🚢', '受変電設備・電気機器': '🔌', 'EMS・監視制御': '📊',
-  '技術協議書・仕様書': '📋', '認証・試験レポート': '✅', '電気図面・SLD': '📐',
-  '部品図面・型番資料': '🔩', '騒音レポート': '🔊', '安全・消防': '🧯',
-  'O&M・メンテナンス': '🔧', '展示会・EXPO': '🏛️', 'レイアウト・配置図': '📏',
-  'その他': '📁'
+  'BESSã»èé»æ± ': 'ð', 'PCSã»ãã¯ã³ã³': 'â¡', 'å¤ªé½åçºé»': 'âï¸', 'é¢¨åçºé»': 'ð',
+  'æ´ä¸é¢¨åã»æµ·äº': 'ð¢', 'åå¤é»è¨­åã»é»æ°æ©å¨': 'ð', 'EMSã»ç£è¦å¶å¾¡': 'ð',
+  'æè¡åè­°æ¸ã»ä»æ§æ¸': 'ð', 'èªè¨¼ã»è©¦é¨ã¬ãã¼ã': 'â', 'é»æ°å³é¢ã»SLD': 'ð',
+  'é¨åå³é¢ã»åçªè³æ': 'ð©', 'é¨é³ã¬ãã¼ã': 'ð', 'å®å¨ã»æ¶é²': 'ð§¯',
+  'O&Mã»ã¡ã³ããã³ã¹': 'ð§', 'å±ç¤ºä¼ã»EXPO': 'ðï¸', 'ã¬ã¤ã¢ã¦ãã»éç½®å³': 'ð',
+  'ãã®ä»': 'ð'
 };
 
 const CATEGORY_CLASSES = {
-  'BESS・蓄電池': 'cat-bess', 'PCS・パワコン': 'cat-pcs',
-  'その他': 'cat-other', '展示会・EXPO': 'cat-expo',
-  '認証・試験レポート': 'cat-test', '太陽光発電': 'cat-solar',
-  '風力発電': 'cat-wind', '洋上風力・海事': 'cat-wind'
+  'BESSã»èé»æ± ': 'cat-bess', 'PCSã»ãã¯ã³ã³': 'cat-pcs',
+  'ãã®ä»': 'cat-other', 'å±ç¤ºä¼ã»EXPO': 'cat-expo',
+  'èªè¨¼ã»è©¦é¨ã¬ãã¼ã': 'cat-test', 'å¤ªé½åçºé»': 'cat-solar',
+  'é¢¨åçºé»': 'cat-wind', 'æ´ä¸é¢¨åã»æµ·äº': 'cat-wind'
 };
 
 async function fetchData() {
@@ -262,7 +262,7 @@ async function fetchData() {
     headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
   allData = await resp.json();
-  document.getElementById('headerCount').textContent = allData.length + '件のパンフレット';
+  document.getElementById('headerCount').textContent = allData.length + 'ä»¶ã®ãã³ãã¬ãã';
   buildSidebar();
   render();
 }
@@ -271,11 +271,11 @@ function buildSidebar() {
   var cats = {};
   allData.forEach(function(r) { cats[r.category] = (cats[r.category] || 0) + 1; });
   var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
-  var html = '<div class="sidebar-title">カテゴリ</div>';
-  html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">📁</span>すべて<span class="sidebar-count">' + allData.length + '</span></div>';
+  var html = '<div class="sidebar-title">ã«ãã´ãª</div>';
+  html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">ð</span>ãã¹ã¦<span class="sidebar-count">' + allData.length + '</span></div>';
   sorted.forEach(function(entry) {
     var cat = entry[0], count = entry[1];
-    var icon = CATEGORY_ICONS[cat] || '📁';
+    var icon = CATEGORY_ICONS[cat] || 'ð';
     var active = currentCategory === cat ? 'active' : '';
     html += '<div class="sidebar-item ' + active + '" onclick="selectCategory(\'' + cat.replace(/'/g, "\\\'" ) + '\')"><span class="sidebar-icon">' + icon + '</span>' + esc(cat) + '<span class="sidebar-count">' + count + '</span></div>';
   });
@@ -311,10 +311,10 @@ function getFiltered() {
 
 function render() {
   var data = getFiltered();
-  var title = currentCategory || 'すべてのパンフレット';
-  var icon = currentCategory ? (CATEGORY_ICONS[currentCategory] || '📁') : '📁';
+  var title = currentCategory || 'ãã¹ã¦ã®ãã³ãã¬ãã';
+  var icon = currentCategory ? (CATEGORY_ICONS[currentCategory] || 'ð') : 'ð';
   document.getElementById('mainTitle').textContent = icon + ' ' + title;
-  document.getElementById('mainCount').textContent = data.length + '件' + (searchQuery ? ' (検索: "' + searchQuery + '")' : '');
+  document.getElementById('mainCount').textContent = data.length + 'ä»¶' + (searchQuery ? ' (æ¤ç´¢: "' + searchQuery + '")' : '');
 
   // Toolbar
   var toolHtml = '';
@@ -322,8 +322,8 @@ function render() {
   var base = currentCategory ? allData.filter(function(r) { return r.category === currentCategory; }) : allData;
   base.forEach(function(r) { if (r.manufacturer) mfrs[r.manufacturer] = (mfrs[r.manufacturer] || 0) + 1; });
   if (Object.keys(mfrs).length > 0) {
-    toolHtml += '<span class="toolbar-label">メーカー:</span>';
-    toolHtml += '<button class="btn-filter ' + (!currentManufacturer ? 'active' : '') + '" onclick="filterMfr(null)">すべて</button>';
+    toolHtml += '<span class="toolbar-label">ã¡ã¼ã«ã¼:</span>';
+    toolHtml += '<button class="btn-filter ' + (!currentManufacturer ? 'active' : '') + '" onclick="filterMfr(null)">ãã¹ã¦</button>';
     Object.entries(mfrs).sort(function(a, b) { return b[1] - a[1]; }).forEach(function(entry) {
       var mfr = entry[0];
       var active = currentManufacturer === mfr ? 'active' : '';
@@ -331,15 +331,15 @@ function render() {
     });
   }
   toolHtml += '<select class="sort-select" onchange="changeSort(this.value)">';
-  toolHtml += '<option value="title"' + (sortBy==='title'?' selected':'') + '>タイトル順</option>';
-  toolHtml += '<option value="size_desc"' + (sortBy==='size_desc'?' selected':'') + '>サイズ (大→小)</option>';
-  toolHtml += '<option value="size_asc"' + (sortBy==='size_asc'?' selected':'') + '>サイズ (小→大)</option>';
-  toolHtml += '<option value="manufacturer"' + (sortBy==='manufacturer'?' selected':'') + '>メーカー順</option>';
+  toolHtml += '<option value="title"' + (sortBy==='title'?' selected':'') + '>ã¿ã¤ãã«é </option>';
+  toolHtml += '<option value="size_desc"' + (sortBy==='size_desc'?' selected':'') + '>ãµã¤ãº (å¤§âå°)</option>';
+  toolHtml += '<option value="size_asc"' + (sortBy==='size_asc'?' selected':'') + '>ãµã¤ãº (å°âå¤§)</option>';
+  toolHtml += '<option value="manufacturer"' + (sortBy==='manufacturer'?' selected':'') + '>ã¡ã¼ã«ã¼é </option>';
   toolHtml += '</select>';
   document.getElementById('toolbar').innerHTML = toolHtml;
 
   if (data.length === 0) {
-    document.getElementById('content').innerHTML = '<div class="empty-state"><p>該当するパンフレットが見つかりませんでした</p></div>';
+    document.getElementById('content').innerHTML = '<div class="empty-state"><p>è©²å½ãããã³ãã¬ãããè¦ã¤ããã¾ããã§ãã</p></div>';
     return;
   }
 
@@ -353,11 +353,11 @@ function render() {
 function renderTable(data) {
   var html = '<div class="table-container"><table><thead><tr>';
   html += '<th style="width:44px;text-align:center">#</th>';
-  html += '<th>タイトル <span class="sort-icon">▼</span></th>';
-  html += '<th>カテゴリ</th>';
-  html += '<th>メーカー <span class="sort-icon">▼</span></th>';
-  html += '<th>タグ</th>';
-  html += '<th>サイズ <span class="sort-icon">▼</span></th>';
+  html += '<th>ã¿ã¤ãã« <span class="sort-icon">â¼</span></th>';
+  html += '<th>ã«ãã´ãª</th>';
+  html += '<th>ã¡ã¼ã«ã¼ <span class="sort-icon">â¼</span></th>';
+  html += '<th>ã¿ã°</th>';
+  html += '<th>ãµã¤ãº <span class="sort-icon">â¼</span></th>';
   html += '<th style="width:56px">PDF</th>';
   html += '</tr></thead><tbody>';
   data.forEach(function(r, i) {
@@ -367,10 +367,10 @@ function renderTable(data) {
     html += '<td class="cell-no">' + (i + 1) + '</td>';
     html += '<td><span class="cell-title" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">' + esc(r.title) + '</span></td>';
     html += '<td><span class="cell-category ' + catClass + '">' + esc(r.category) + '</span></td>';
-    html += '<td class="cell-mfr">' + (r.manufacturer ? esc(r.manufacturer) : '–') + '</td>';
+    html += '<td class="cell-mfr">' + (r.manufacturer ? esc(r.manufacturer) : 'â') + '</td>';
     html += '<td>' + tags + '</td>';
     html += '<td class="cell-size">' + formatSize(r.file_size) + '</td>';
-    html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">📄 開く</span></td>';
+    html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">ð éã</span></td>';
     html += '</tr>';
   });
   html += '</tbody></table></div>';
@@ -387,7 +387,7 @@ function renderCards(data) {
     html += '<div class="card" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">';
     html += '<div class="card-title">' + esc(r.title) + '</div>';
     html += '<div class="card-meta">' + catTag + mfr + tags + '</div>';
-    html += '<div class="card-info"><span>📄 ' + size + '</span><span>🔑 ' + esc(r.storage_key) + '</span></div>';
+    html += '<div class="card-info"><span>ð ' + size + '</span><span>ð ' + esc(r.storage_key) + '</span></div>';
     html += '</div>';
   });
   html += '</div>';
@@ -419,7 +419,7 @@ function closeModal(e) {
   document.getElementById('pdfFrame').src = '';
   document.getElementById('translatePanel').style.display = 'none';
   document.getElementById('pdfFrame').style.display = '';
-  document.getElementById('modalTranslate').textContent = 'Google翻訳で開く';
+  document.getElementById('modalTranslate').textContent = 'Googleç¿»è¨³ã§éã';
   document.body.style.overflow = '';
 }
 
@@ -432,32 +432,32 @@ async function translatePdf() {
   if (panel.style.display === 'block') {
     panel.style.display = 'none';
     frame.style.display = '';
-    btn.textContent = 'Google翻訳で開く';
+    btn.textContent = 'Googleç¿»è¨³ã§éã';
     return;
   }
   panel.style.display = 'block';
   frame.style.display = 'none';
-  btn.textContent = '原文PDFに戻す';
-  panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>PDFからテキストを抽出中...</div>';
+  btn.textContent = 'åæPDFã«æ»ã';
+  panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>PDFãããã­ã¹ããæ½åºä¸­...</div>';
   try {
     var url = document.getElementById('modalDownload').href;
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     var pdf = await pdfjsLib.getDocument(url).promise;
     var pages = [];
     for (var i = 1; i <= pdf.numPages; i++) {
-      panel.querySelector('.tp-progress').innerHTML = '<div class="spinner"></div><br>テキスト抽出中... (' + i + '/' + pdf.numPages + 'ページ)';
+      panel.querySelector('.tp-progress').innerHTML = '<div class="spinner"></div><br>ãã­ã¹ãæ½åºä¸­... (' + i + '/' + pdf.numPages + 'ãã¼ã¸)';
       var pg = await pdf.getPage(i);
       var tc = await pg.getTextContent();
       var t = tc.items.map(function(x){return x.str;}).join(' ').trim();
       if (t) pages.push({num:i, text:t});
     }
     if (pages.length === 0) {
-      panel.innerHTML = '<div class="tp-progress">テキストが見つかりませんでした。このPDFは画像ベースの可能性があります。</div>';
+      panel.innerHTML = '<div class="tp-progress">ãã­ã¹ããè¦ã¤ããã¾ããã§ããããã®PDFã¯ç»åãã¼ã¹ã®å¯è½æ§ãããã¾ãã</div>';
       return;
     }
     var html = '';
     for (var j = 0; j < pages.length; j++) {
-      panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>翻訳中... (' + (j+1) + '/' + pages.length + 'ページ)</div>' + html;
+      panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>ç¿»è¨³ä¸­... (' + (j+1) + '/' + pages.length + 'ãã¼ã¸)</div>' + html;
       var chunks = [];
       var src = pages[j].text;
       while (src.length > 0) { chunks.push(src.substring(0, 4500)); src = src.substring(4500); }
@@ -467,11 +467,11 @@ async function translatePdf() {
         var d = await r.json();
         for (var m = 0; m < d[0].length; m++) { if(d[0][m][0]) translated += d[0][m][0]; }
       }
-      html += '<div class="tp-page"><div class="tp-num">— ページ ' + pages[j].num + ' —</div><div class="tp-text">' + esc(translated) + '</div></div>';
+      html += '<div class="tp-page"><div class="tp-num">â ãã¼ã¸ ' + pages[j].num + ' â</div><div class="tp-text">' + esc(translated) + '</div></div>';
     }
     panel.innerHTML = html;
   } catch(e) {
-    panel.innerHTML = '<div class="tp-progress">翻訳エラー: ' + esc(String(e.message || e)) + '</div>';
+    panel.innerHTML = '<div class="tp-progress">ç¿»è¨³ã¨ã©ã¼: ' + esc(String(e.message || e)) + '</div>';
   }
 }
 
@@ -480,482 +480,25 @@ function exportExcel() {
   var rows = data.map(function(r, i) {
     return {
       '#': i + 1,
-      'タイトル': r.title || '',
-      'カテゴリ': r.category || '',
-      'メーカー': r.manufacturer || '',
-      'タグ': (r.tags || []).join(', '),
-      'ファイルサイズ': formatSize(r.file_size),
-      'ファイル名': r.filename || '',
+      'ã¿ã¤ãã«': r.title || '',
+      'ã«ãã´ãª': r.category || '',
+      'ã¡ã¼ã«ã¼': r.manufacturer || '',
+      'ã¿ã°': (r.tags || []).join(', '),
+      'ãã¡ã¤ã«ãµã¤ãº': formatSize(r.file_size),
+      'ãã¡ã¤ã«å': r.filename || '',
       'PDF URL': r.storage_url || ''
     };
   });
   var ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = [{wch:5},{wch:50},{wch:20},{wch:15},{wch:20},{wch:12},{wch:40},{wch:60}];
   var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'パンフレット一覧');
-  var catName = currentCategory || 'すべて';
-  XLSX.writeFile(wb, 'パンフレットDB_' + catName + '.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, 'ãã³ãã¬ããä¸è¦§');
+  var catName = currentCategory || 'ãã¹ã¦';
+  XLSX.writeFile(wb, 'ãã³ãã¬ããDB_' + catName + '.xlsx');
 }
 
 function formatSize(bytes) {
-  if (!bytes) return '不明';
-  if (bytes < 1024) return bytes + ' B';
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
-  return (bytes / 1048576).toFixed(1) + ' MB';
-}
-
-function esc(s) {
-  if (!s) return '';
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-}
-
-function escAttr(s) {
-  if (!s) return '';
-  return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"');
-}
-
-fetchData();
-</script>
-</body>
-</html>
-<!DOCTYPE html>
-<html lang="ja">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EXPO/展示会-パンフレットDB しろくま</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<style>
-:root {
-  --sidebar-bg: #1a1f2e;
-  --sidebar-hover: #252b3d;
-  --sidebar-active: #2a3350;
-  --sidebar-text: #c8cdd8;
-  --sidebar-muted: #6b7280;
-  --accent: #e67e22;
-  --accent-light: #f39c12;
-  --sidebar-width: 230px;
-  --header-height: 56px;
-}
-* { margin:0; padding:0; box-sizing:border-box; }
-body { font-family:'Noto Sans JP','Segoe UI',sans-serif; background:#f5f6f8; color:#1a1a2e; overflow:hidden; height:100vh; }
-
-/* Header */
-.header {
-  height:var(--header-height); background:var(--sidebar-bg); border-bottom:1px solid #2a2f40;
-  display:flex; align-items:center; padding:0 20px; position:fixed; top:0; left:0; right:0; z-index:100;
-}
-.header-logo { font-size:17px; font-weight:700; color:var(--accent); white-space:nowrap; }
-.header-logo span { color:var(--sidebar-text); font-weight:400; margin-left:8px; font-size:13px; }
-.header-search { flex:1; max-width:460px; margin:0 28px; position:relative; }
-.header-search input {
-  width:100%; padding:7px 14px 7px 36px; border-radius:6px; border:1px solid #3a4055;
-  background:#252b3d; color:#e0e0e0; font-size:13px; outline:none;
-}
-.header-search input:focus { border-color:var(--accent); }
-.header-search svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#6b7280; }
-.header-right { display:flex; gap:10px; align-items:center; margin-left:auto; }
-.header-count { font-size:12px; color:#9ca3af; white-space:nowrap; }
-.btn-excel { padding:6px 14px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; font-family:inherit; }
-.btn-excel:hover { background:var(--accent-light); }
-
-/* Layout */
-.layout { display:flex; height:calc(100vh - var(--header-height)); margin-top:var(--header-height); }
-
-/* Sidebar */
-.sidebar {
-  width:var(--sidebar-width); min-width:var(--sidebar-width); background:var(--sidebar-bg);
-  border-right:1px solid #2a2f40; overflow-y:auto; padding:14px 0;
-}
-.sidebar-title { font-size:11px; color:var(--sidebar-muted); padding:0 16px; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
-.sidebar-item {
-  display:flex; align-items:center; padding:7px 16px; cursor:pointer; font-size:13px; gap:8px;
-  color:var(--sidebar-text); transition:background 0.15s; border-left:3px solid transparent;
-}
-.sidebar-item:hover { background:var(--sidebar-hover); }
-.sidebar-item.active { background:var(--sidebar-active); color:var(--accent); font-weight:600; border-left-color:var(--accent); }
-.sidebar-icon { width:18px; text-align:center; font-size:14px; }
-.sidebar-count { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; min-width:28px; text-align:center; }
-
-/* Main */
-.main { flex:1; overflow-y:auto; padding:20px 24px; background:#fff; }
-.main-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
-.main-title-area { display:flex; align-items:center; gap:8px; }
-.main-title { font-size:18px; font-weight:700; color:#1a1a2e; }
-.main-count { font-size:13px; color:#9ca3af; font-weight:400; }
-.view-toggle { display:flex; gap:4px; }
-.btn-toggle { padding:5px 12px; border-radius:5px; border:1px solid #d1d5db; background:#fff; color:#6b7280; font-size:12px; cursor:pointer; font-family:inherit; }
-.btn-toggle:hover { background:#f3f4f6; }
-.btn-toggle.active { background:#1a1f2e; color:#fff; border-color:#1a1f2e; }
-
-/* Toolbar */
-.toolbar { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
-.toolbar-label { font-size:12px; color:#9ca3af; margin-right:2px; }
-.btn-filter { padding:4px 10px; border-radius:4px; border:1px solid #e5e7eb; background:#fff; color:#6b7280; font-size:11px; cursor:pointer; font-family:inherit; }
-.btn-filter:hover { background:#f9fafb; border-color:#d1d5db; }
-.btn-filter.active { background:var(--accent); color:#fff; border-color:var(--accent); }
-.sort-select { padding:5px 10px; border-radius:5px; border:1px solid #d1d5db; background:#fff; color:#374151; font-size:12px; font-family:inherit; cursor:pointer; margin-left:auto; }
-
-/* Table */
-.table-container { border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
-table { width:100%; border-collapse:collapse; font-size:13px; }
-thead { background:#f8f9fb; }
-th {
-  padding:9px 14px; text-align:left; font-weight:600; color:#6b7280; font-size:11px;
-  border-bottom:2px solid #e5e7eb; white-space:nowrap; cursor:pointer; user-select:none;
-  text-transform:uppercase; letter-spacing:0.3px;
-}
-th:hover { color:var(--accent); }
-th .sort-icon { margin-left:3px; font-size:9px; color:#d1d5db; }
-td { padding:9px 14px; border-bottom:1px solid #f0f1f3; color:#374151; }
-tbody tr:hover { background:#fef7f0; }
-tbody tr:last-child td { border-bottom:none; }
-.cell-title { color:#2563eb; cursor:pointer; font-weight:500; font-size:13px; }
-.cell-title:hover { text-decoration:underline; color:#1d4ed8; }
-.cell-category { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; }
-.cat-bess { background:#dcfce7; color:#166534; }
-.cat-pcs { background:#dbeafe; color:#1e40af; }
-.cat-other { background:#fef3c7; color:#92400e; }
-.cat-expo { background:#f3e8ff; color:#6b21a8; }
-.cat-test { background:#e0e7ff; color:#3730a3; }
-.cat-solar { background:#fef9c3; color:#854d0e; }
-.cat-wind { background:#e0f2fe; color:#075985; }
-.cat-default { background:#f3f4f6; color:#4b5563; }
-.cell-tag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; background:#f3f4f6; color:#6b7280; margin-right:3px; margin-bottom:1px; }
-.cell-size { color:#9ca3af; white-space:nowrap; font-size:12px; }
-.cell-mfr { font-weight:600; color:#374151; }
-.cell-no { color:#d1d5db; font-size:12px; text-align:center; }
-.cell-pdf { color:var(--accent); cursor:pointer; font-size:12px; font-weight:500; white-space:nowrap; }
-.cell-pdf:hover { color:var(--accent-light); text-decoration:underline; }
-
-/* Cards grid */
-.cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; }
-.card {
-  background:#f8f9fb; border-radius:10px; padding:18px; cursor:pointer;
-  border:1px solid #e5e7eb; transition:all 0.2s;
-}
-.card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.08); }
-.card-title { font-size:14px; font-weight:600; line-height:1.5; margin-bottom:8px; color:#1a1a2e; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
-.card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px; }
-.card-tag { font-size:11px; padding:2px 8px; border-radius:4px; background:#eef2ff; color:#4338ca; }
-.card-mfr { font-size:11px; padding:2px 8px; border-radius:4px; background:#dcfce7; color:#166534; }
-.card-info { font-size:12px; color:#9ca3af; display:flex; gap:12px; }
-.card-info span { display:flex; align-items:center; gap:4px; }
-
-/* Modal */
-.modal-overlay {
-  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
-  background:rgba(0,0,0,0.6); z-index:200; justify-content:center; align-items:center;
-}
-.modal-overlay.active { display:flex; }
-.modal {
-  background:#fff; border-radius:12px; width:90vw; height:90vh;
-  display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3);
-}
-.modal-header {
-  display:flex; align-items:center; justify-content:space-between; padding:14px 20px;
-  border-bottom:1px solid #e5e7eb; min-height:52px; background:#f8f9fb;
-}
-.modal-title { font-size:14px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:16px; color:#1a1a2e; }
-.modal-actions { display:flex; gap:8px; }
-.modal-btn {
-  padding:7px 14px; border-radius:6px; border:1px solid #d1d5db; background:#fff;
-  color:#374151; font-size:12px; cursor:pointer; font-family:inherit;
-  text-decoration:none; display:inline-flex; align-items:center; gap:6px;
-}
-.modal-btn:hover { border-color:var(--accent); color:var(--accent); }
-.modal-btn.close { background:#ef4444; color:#fff; border-color:#ef4444; }
-.modal-btn.close:hover { background:#dc2626; }
-.modal-btn.translate { background:#4285f4; color:#fff; border-color:#4285f4; }
-.modal-btn.translate:hover { background:#3367d6; border-color:#3367d6; }
-.modal-body { flex:1; }
-.modal-body iframe { width:100%; height:100%; border:none; }
-
-/* Empty */
-.empty-state { text-align:center; padding:60px 20px; color:#9ca3af; }
-.empty-state p { font-size:14px; }
-
-/* Scrollbar */
-.sidebar::-webkit-scrollbar { width:5px; }
-.sidebar::-webkit-scrollbar-track { background:transparent; }
-.sidebar::-webkit-scrollbar-thumb { background:#3a4055; border-radius:3px; }
-
-/* Responsive */
-@media (max-width:768px) {
-  .sidebar { display:none; }
-  .cards { grid-template-columns:1fr; }
-  .modal { width:98vw; height:95vh; }
-}
-</style>
-</head>
-<body>
-
-<header class="header">
-  <div class="header-logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
-  <div class="header-search">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." onkeydown="if(event.key==='Enter')handleSearch()">
-    <button class="btn-search" onclick="handleSearch()">検索</button>
-  </div>
-  <div class="header-right">
-    <div class="header-count" id="headerCount"></div>
-    <button class="btn-excel" onclick="exportExcel()">📥 Excel出力</button>
-  </div>
-</header>
-
-<div class="layout">
-  <nav class="sidebar" id="sidebar"></nav>
-  <main class="main" id="main">
-    <div class="main-header">
-      <div class="main-title-area">
-        <h2 class="main-title" id="mainTitle">すべてのパンフレット</h2>
-        <span class="main-count" id="mainCount"></span>
-      </div>
-      <div class="view-toggle">
-        <button class="btn-toggle" id="btnCard" onclick="setView('card')">🃏 カード</button>
-        <button class="btn-toggle active" id="btnTable" onclick="setView('table')">📊 テーブル</button>
-      </div>
-    </div>
-    <div class="toolbar" id="toolbar"></div>
-    <div id="content"></div>
-  </main>
-</div>
-
-<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
-  <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-header">
-      <div class="modal-title" id="modalTitle"></div>
-      <div class="modal-actions">
-        <a class="modal-btn" id="modalDownload" href="#" target="_blank">新しいタブで開く</a>
-        <a class="modal-btn translate" id="modalTranslate" href="#" target="_blank">Google翻訳で開く</a>
-        <button class="modal-btn close" onclick="closeModal()">閉じる</button>
-      </div>
-    </div>
-    <div class="modal-body">
-      <iframe id="pdfFrame" src=""></iframe>
-    </div>
-  </div>
-</div>
-
-<script>
-const SUPABASE_URL = 'https://manowprcyrfqonzdoqja.supabase.co';
-const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbm93cHJjeXJmcW9uemRvcWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMTU5NDIsImV4cCI6MjA4ODc5MTk0Mn0.eZ9UHW041t85kLBglI_CK6p0uX5dRVMbWyJO0oR50Kc';
-
-let allData = [];
-let currentCategory = null;
-let currentManufacturer = null;
-let searchQuery = '';
-let sortBy = 'title';
-let viewMode = 'table';
-
-const CATEGORY_ICONS = {
-  'BESS・蓄電池': '🔋', 'PCS・パワコン': '⚡', '太陽光発電': '☀️', '風力発電': '🌀',
-  '洋上風力・海事': '🚢', '受変電設備・電気機器': '🔌', 'EMS・監視制御': '📊',
-  '技術協議書・仕様書': '📋', '認証・試験レポート': '✅', '電気図面・SLD': '📐',
-  '部品図面・型番資料': '🔩', '騒音レポート': '🔊', '安全・消防': '🧯',
-  'O&M・メンテナンス': '🔧', '展示会・EXPO': '🏛️', 'レイアウト・配置図': '📏',
-  'その他': '📁'
-};
-
-const CATEGORY_CLASSES = {
-  'BESS・蓄電池': 'cat-bess', 'PCS・パワコン': 'cat-pcs',
-  'その他': 'cat-other', '展示会・EXPO': 'cat-expo',
-  '認証・試験レポート': 'cat-test', '太陽光発電': 'cat-solar',
-  '風力発電': 'cat-wind', '洋上風力・海事': 'cat-wind'
-};
-
-async function fetchData() {
-  const resp = await fetch(SUPABASE_URL + '/rest/v1/pamphlets?select=*&order=title', {
-    headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
-  });
-  allData = await resp.json();
-  document.getElementById('headerCount').textContent = allData.length + '件のパンフレット';
-  buildSidebar();
-  render();
-}
-
-function buildSidebar() {
-  var cats = {};
-  allData.forEach(function(r) { cats[r.category] = (cats[r.category] || 0) + 1; });
-  var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
-  var html = '<div class="sidebar-title">カテゴリ</div>';
-  html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">📁</span>すべて<span class="sidebar-count">' + allData.length + '</span></div>';
-  sorted.forEach(function(entry) {
-    var cat = entry[0], count = entry[1];
-    var icon = CATEGORY_ICONS[cat] || '📁';
-    var active = currentCategory === cat ? 'active' : '';
-    html += '<div class="sidebar-item ' + active + '" onclick="selectCategory(\'' + cat.replace(/'/g, "\\\'" ) + '\')"><span class="sidebar-icon">' + icon + '</span>' + esc(cat) + '<span class="sidebar-count">' + count + '</span></div>';
-  });
-  document.getElementById('sidebar').innerHTML = html;
-}
-
-function selectCategory(cat) {
-  currentCategory = cat;
-  currentManufacturer = null;
-  buildSidebar();
-  render();
-}
-
-function getFiltered() {
-  var data = allData.slice();
-  if (currentCategory) data = data.filter(function(r) { return r.category === currentCategory; });
-  if (currentManufacturer) data = data.filter(function(r) { return r.manufacturer === currentManufacturer; });
-  if (searchQuery) {
-    var q = searchQuery.toLowerCase();
-    data = data.filter(function(r) {
-      return (r.title && r.title.toLowerCase().indexOf(q) >= 0) ||
-        (r.filename && r.filename.toLowerCase().indexOf(q) >= 0) ||
-        (r.manufacturer && r.manufacturer.toLowerCase().indexOf(q) >= 0) ||
-        (r.tags && r.tags.some(function(t) { return t.toLowerCase().indexOf(q) >= 0; }));
-    });
-  }
-  if (sortBy === 'title') data.sort(function(a, b) { return (a.title || '').localeCompare(b.title || '', 'ja'); });
-  else if (sortBy === 'size_desc') data.sort(function(a, b) { return (b.file_size || 0) - (a.file_size || 0); });
-  else if (sortBy === 'size_asc') data.sort(function(a, b) { return (a.file_size || 0) - (b.file_size || 0); });
-  else if (sortBy === 'manufacturer') data.sort(function(a, b) { return (a.manufacturer || 'zzz').localeCompare(b.manufacturer || 'zzz', 'ja'); });
-  return data;
-}
-
-function render() {
-  var data = getFiltered();
-  var title = currentCategory || 'すべてのパンフレット';
-  var icon = currentCategory ? (CATEGORY_ICONS[currentCategory] || '📁') : '📁';
-  document.getElementById('mainTitle').textContent = icon + ' ' + title;
-  document.getElementById('mainCount').textContent = data.length + '件' + (searchQuery ? ' (検索: "' + searchQuery + '")' : '');
-
-  // Toolbar
-  var toolHtml = '';
-  var mfrs = {};
-  var base = currentCategory ? allData.filter(function(r) { return r.category === currentCategory; }) : allData;
-  base.forEach(function(r) { if (r.manufacturer) mfrs[r.manufacturer] = (mfrs[r.manufacturer] || 0) + 1; });
-  if (Object.keys(mfrs).length > 0) {
-    toolHtml += '<span class="toolbar-label">メーカー:</span>';
-    toolHtml += '<button class="btn-filter ' + (!currentManufacturer ? 'active' : '') + '" onclick="filterMfr(null)">すべて</button>';
-    Object.entries(mfrs).sort(function(a, b) { return b[1] - a[1]; }).forEach(function(entry) {
-      var mfr = entry[0];
-      var active = currentManufacturer === mfr ? 'active' : '';
-      toolHtml += '<button class="btn-filter ' + active + '" onclick="filterMfr(\'' + mfr.replace(/'/g, "\\\'" ) + '\')">' + esc(mfr) + '</button>';
-    });
-  }
-  toolHtml += '<select class="sort-select" onchange="changeSort(this.value)">';
-  toolHtml += '<option value="title"' + (sortBy==='title'?' selected':'') + '>タイトル順</option>';
-  toolHtml += '<option value="size_desc"' + (sortBy==='size_desc'?' selected':'') + '>サイズ (大→小)</option>';
-  toolHtml += '<option value="size_asc"' + (sortBy==='size_asc'?' selected':'') + '>サイズ (小→大)</option>';
-  toolHtml += '<option value="manufacturer"' + (sortBy==='manufacturer'?' selected':'') + '>メーカー順</option>';
-  toolHtml += '</select>';
-  document.getElementById('toolbar').innerHTML = toolHtml;
-
-  if (data.length === 0) {
-    document.getElementById('content').innerHTML = '<div class="empty-state"><p>該当するパンフレットが見つかりませんでした</p></div>';
-    return;
-  }
-
-  if (viewMode === 'table') {
-    renderTable(data);
-  } else {
-    renderCards(data);
-  }
-}
-
-function renderTable(data) {
-  var html = '<div class="table-container"><table><thead><tr>';
-  html += '<th style="width:44px;text-align:center">#</th>';
-  html += '<th>タイトル <span class="sort-icon">▼</span></th>';
-  html += '<th>カテゴリ</th>';
-  html += '<th>メーカー <span class="sort-icon">▼</span></th>';
-  html += '<th>タグ</th>';
-  html += '<th>サイズ <span class="sort-icon">▼</span></th>';
-  html += '<th style="width:56px">PDF</th>';
-  html += '</tr></thead><tbody>';
-  data.forEach(function(r, i) {
-    var catClass = CATEGORY_CLASSES[r.category] || 'cat-default';
-    var tags = (r.tags || []).map(function(t) { return '<span class="cell-tag">' + esc(t) + '</span>'; }).join('');
-    html += '<tr>';
-    html += '<td class="cell-no">' + (i + 1) + '</td>';
-    html += '<td><span class="cell-title" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">' + esc(r.title) + '</span></td>';
-    html += '<td><span class="cell-category ' + catClass + '">' + esc(r.category) + '</span></td>';
-    html += '<td class="cell-mfr">' + (r.manufacturer ? esc(r.manufacturer) : '–') + '</td>';
-    html += '<td>' + tags + '</td>';
-    html += '<td class="cell-size">' + formatSize(r.file_size) + '</td>';
-    html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">📄 開く</span></td>';
-    html += '</tr>';
-  });
-  html += '</tbody></table></div>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function renderCards(data) {
-  var html = '<div class="cards">';
-  data.forEach(function(r) {
-    var size = formatSize(r.file_size);
-    var mfr = r.manufacturer ? '<span class="card-mfr">' + esc(r.manufacturer) + '</span>' : '';
-    var tags = (r.tags || []).map(function(t) { return '<span class="card-tag">' + esc(t) + '</span>'; }).join('');
-    var catTag = '<span class="card-tag">' + esc(r.category) + '</span>';
-    html += '<div class="card" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">';
-    html += '<div class="card-title">' + esc(r.title) + '</div>';
-    html += '<div class="card-meta">' + catTag + mfr + tags + '</div>';
-    html += '<div class="card-info"><span>📄 ' + size + '</span><span>🔑 ' + esc(r.storage_key) + '</span></div>';
-    html += '</div>';
-  });
-  html += '</div>';
-  document.getElementById('content').innerHTML = html;
-}
-
-function setView(mode) {
-  viewMode = mode;
-  document.getElementById('btnCard').className = 'btn-toggle' + (mode === 'card' ? ' active' : '');
-  document.getElementById('btnTable').className = 'btn-toggle' + (mode === 'table' ? ' active' : '');
-  render();
-}
-
-function filterMfr(mfr) { currentManufacturer = mfr; render(); }
-function changeSort(val) { sortBy = val; render(); }
-function handleSearch() { searchQuery = document.getElementById('searchInput').value.trim(); render(); }
-
-function openPdf(url, title) {
-  document.getElementById('modalTitle').textContent = title;
-  document.getElementById('pdfFrame').src = url;
-  document.getElementById('modalDownload').href = url;
-  document.getElementById('modalTranslate').href = 'https://translate.google.co.jp/?sl=en&tl=ja&op=docs';
-  document.getElementById('modalOverlay').classList.add('active');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal(e) {
-  if (e && e.target !== document.getElementById('modalOverlay')) return;
-  document.getElementById('modalOverlay').classList.remove('active');
-  document.getElementById('pdfFrame').src = '';
-  document.body.style.overflow = '';
-}
-
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
-
-function exportExcel() {
-  var data = getFiltered();
-  var rows = data.map(function(r, i) {
-    return {
-      '#': i + 1,
-      'タイトル': r.title || '',
-      'カテゴリ': r.category || '',
-      'メーカー': r.manufacturer || '',
-      'タグ': (r.tags || []).join(', '),
-      'ファイルサイズ': formatSize(r.file_size),
-      'ファイル名': r.filename || '',
-      'PDF URL': r.storage_url || ''
-    };
-  });
-  var ws = XLSX.utils.json_to_sheet(rows);
-  ws['!cols'] = [{wch:5},{wch:50},{wch:20},{wch:15},{wch:20},{wch:12},{wch:40},{wch:60}];
-  var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'パンフレット一覧');
-  var catName = currentCategory || 'すべて';
-  XLSX.writeFile(wb, 'パンフレットDB_' + catName + '.xlsx');
-}
-
-function formatSize(bytes) {
-  if (!bytes) return '不明';
+  if (!bytes) return 'ä¸æ';
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
