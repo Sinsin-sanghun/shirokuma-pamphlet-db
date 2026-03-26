@@ -397,7 +397,7 @@ function openPdf(url, title) {
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('pdfFrame').src = url;
   document.getElementById('modalDownload').href = url;
-  document.getElementById('modalTranslate').href = 'https://translate.google.com/translate?sl=en&tl=ja&u=' + encodeURIComponent(url);
+  document.getElementById('modalTranslate').href = 'https://translate.google.com/translate?sl=en&tl=ja&u=' + encodeURIComponent('https://docs.google.com/gview?url=' + encodeURIComponent(url));
   document.getElementById('modalOverlay').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
