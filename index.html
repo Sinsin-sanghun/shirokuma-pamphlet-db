@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB ãããã¾</title>
+<title>EXPO/展示会-パンフレットDB しろくま</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -183,15 +183,15 @@ tbody tr:last-child td { border-bottom:none; }
 <body>
 
 <header class="header">
-  <div class="header-logo">EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB<span>ãããã¾</span></div>
+  <div class="header-logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
   <div class="header-search">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="ã¿ã¤ãã«ã»ã¡ã¼ã«ã¼ã»ãã¡ã¤ã«åã§æ¤ç´¢..." onkeydown="if(event.key==='Enter')handleSearch()">
-    <button class="btn-search" onclick="handleSearch()">æ¤ç´¢</button>
+    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." onkeydown="if(event.key==='Enter')handleSearch()">
+    <button class="btn-search" onclick="handleSearch()">検索</button>
   </div>
   <div class="header-right">
     <div class="header-count" id="headerCount"></div>
-    <button class="btn-excel" onclick="exportExcel()">ð¥ Excelåºå</button>
+    <button class="btn-excel" onclick="exportExcel()">📥 Excel出力</button>
   </div>
 </header>
 
@@ -200,12 +200,12 @@ tbody tr:last-child td { border-bottom:none; }
   <main class="main" id="main">
     <div class="main-header">
       <div class="main-title-area">
-        <h2 class="main-title" id="mainTitle">ãã¹ã¦ã®ãã³ãã¬ãã</h2>
+        <h2 class="main-title" id="mainTitle">すべてのパンフレット</h2>
         <span class="main-count" id="mainCount"></span>
       </div>
       <div class="view-toggle">
-        <button class="btn-toggle" id="btnCard" onclick="setView('card')">ð ã«ã¼ã</button>
-        <button class="btn-toggle active" id="btnTable" onclick="setView('table')">ð ãã¼ãã«</button>
+        <button class="btn-toggle" id="btnCard" onclick="setView('card')">🃏 カード</button>
+        <button class="btn-toggle active" id="btnTable" onclick="setView('table')">📊 テーブル</button>
       </div>
     </div>
     <div class="toolbar" id="toolbar"></div>
@@ -218,9 +218,9 @@ tbody tr:last-child td { border-bottom:none; }
     <div class="modal-header">
       <div class="modal-title" id="modalTitle"></div>
       <div class="modal-actions">
-        <a class="modal-btn" id="modalDownload" href="#" target="_blank">æ°ããã¿ãã§éã</a>
-        <button class="modal-btn translate" id="modalTranslate" onclick="translatePdf()">Googleç¿»è¨³ã§éã</button>
-        <button class="modal-btn close" onclick="closeModal()">éãã</button>
+        <a class="modal-btn" id="modalDownload" href="#" target="_blank">新しいタブで開く</a>
+        <button class="modal-btn translate" id="modalTranslate" onclick="translatePdf()">Google翻訳で開く</button>
+        <button class="modal-btn close" onclick="closeModal()">閉じる</button>
       </div>
     </div>
     <div class="modal-body">
@@ -242,19 +242,19 @@ let sortBy = 'title';
 let viewMode = 'table';
 
 const CATEGORY_ICONS = {
-  'BESSã»èé»æ± ': 'ð', 'PCSã»ãã¯ã³ã³': 'â¡', 'å¤ªé½åçºé»': 'âï¸', 'é¢¨åçºé»': 'ð',
-  'æ´ä¸é¢¨åã»æµ·äº': 'ð¢', 'åå¤é»è¨­åã»é»æ°æ©å¨': 'ð', 'EMSã»ç£è¦å¶å¾¡': 'ð',
-  'æè¡åè­°æ¸ã»ä»æ§æ¸': 'ð', 'èªè¨¼ã»è©¦é¨ã¬ãã¼ã': 'â', 'é»æ°å³é¢ã»SLD': 'ð',
-  'é¨åå³é¢ã»åçªè³æ': 'ð©', 'é¨é³ã¬ãã¼ã': 'ð', 'å®å¨ã»æ¶é²': 'ð§¯',
-  'O&Mã»ã¡ã³ããã³ã¹': 'ð§', 'å±ç¤ºä¼ã»EXPO': 'ðï¸', 'ã¬ã¤ã¢ã¦ãã»éç½®å³': 'ð',
-  'ãã®ä»': 'ð'
+  'BESS・蓄電池': '🔋', 'PCS・パワコン': '⚡', '太陽光発電': '☀️', '風力発電': '🌀',
+  '洋上風力・海事': '🚢', '受変電設備・電気機器': '🔌', 'EMS・監視制御': '📊',
+  '技術協議書・仕様書': '📋', '認証・試験レポート': '✅', '電気図面・SLD': '📐',
+  '部品図面・型番資料': '🔩', '騒音レポート': '🔊', '安全・消防': '🧯',
+  'O&M・メンテナンス': '🔧', '展示会・EXPO': '🏛️', 'レイアウト・配置図': '📏',
+  'その他': '📁'
 };
 
 const CATEGORY_CLASSES = {
-  'BESSã»èé»æ± ': 'cat-bess', 'PCSã»ãã¯ã³ã³': 'cat-pcs',
-  'ãã®ä»': 'cat-other', 'å±ç¤ºä¼ã»EXPO': 'cat-expo',
-  'èªè¨¼ã»è©¦é¨ã¬ãã¼ã': 'cat-test', 'å¤ªé½åçºé»': 'cat-solar',
-  'é¢¨åçºé»': 'cat-wind', 'æ´ä¸é¢¨åã»æµ·äº': 'cat-wind'
+  'BESS・蓄電池': 'cat-bess', 'PCS・パワコン': 'cat-pcs',
+  'その他': 'cat-other', '展示会・EXPO': 'cat-expo',
+  '認証・試験レポート': 'cat-test', '太陽光発電': 'cat-solar',
+  '風力発電': 'cat-wind', '洋上風力・海事': 'cat-wind'
 };
 
 async function fetchData() {
@@ -262,7 +262,7 @@ async function fetchData() {
     headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
   allData = await resp.json();
-  document.getElementById('headerCount').textContent = allData.length + 'ä»¶ã®ãã³ãã¬ãã';
+  document.getElementById('headerCount').textContent = allData.length + '件のパンフレット';
   buildSidebar();
   render();
 }
@@ -271,11 +271,11 @@ function buildSidebar() {
   var cats = {};
   allData.forEach(function(r) { cats[r.category] = (cats[r.category] || 0) + 1; });
   var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
-  var html = '<div class="sidebar-title">ã«ãã´ãª</div>';
-  html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">ð</span>ãã¹ã¦<span class="sidebar-count">' + allData.length + '</span></div>';
+  var html = '<div class="sidebar-title">カテゴリ</div>';
+  html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">📁</span>すべて<span class="sidebar-count">' + allData.length + '</span></div>';
   sorted.forEach(function(entry) {
     var cat = entry[0], count = entry[1];
-    var icon = CATEGORY_ICONS[cat] || 'ð';
+    var icon = CATEGORY_ICONS[cat] || '📁';
     var active = currentCategory === cat ? 'active' : '';
     html += '<div class="sidebar-item ' + active + '" onclick="selectCategory(\'' + cat.replace(/'/g, "\\\'" ) + '\')"><span class="sidebar-icon">' + icon + '</span>' + esc(cat) + '<span class="sidebar-count">' + count + '</span></div>';
   });
@@ -311,10 +311,10 @@ function getFiltered() {
 
 function render() {
   var data = getFiltered();
-  var title = currentCategory || 'ãã¹ã¦ã®ãã³ãã¬ãã';
-  var icon = currentCategory ? (CATEGORY_ICONS[currentCategory] || 'ð') : 'ð';
+  var title = currentCategory || 'すべてのパンフレット';
+  var icon = currentCategory ? (CATEGORY_ICONS[currentCategory] || '📁') : '📁';
   document.getElementById('mainTitle').textContent = icon + ' ' + title;
-  document.getElementById('mainCount').textContent = data.length + 'ä»¶' + (searchQuery ? ' (æ¤ç´¢: "' + searchQuery + '")' : '');
+  document.getElementById('mainCount').textContent = data.length + '件' + (searchQuery ? ' (検索: "' + searchQuery + '")' : '');
 
   // Toolbar
   var toolHtml = '';
@@ -322,8 +322,8 @@ function render() {
   var base = currentCategory ? allData.filter(function(r) { return r.category === currentCategory; }) : allData;
   base.forEach(function(r) { if (r.manufacturer) mfrs[r.manufacturer] = (mfrs[r.manufacturer] || 0) + 1; });
   if (Object.keys(mfrs).length > 0) {
-    toolHtml += '<span class="toolbar-label">ã¡ã¼ã«ã¼:</span>';
-    toolHtml += '<button class="btn-filter ' + (!currentManufacturer ? 'active' : '') + '" onclick="filterMfr(null)">ãã¹ã¦</button>';
+    toolHtml += '<span class="toolbar-label">メーカー:</span>';
+    toolHtml += '<button class="btn-filter ' + (!currentManufacturer ? 'active' : '') + '" onclick="filterMfr(null)">すべて</button>';
     Object.entries(mfrs).sort(function(a, b) { return b[1] - a[1]; }).forEach(function(entry) {
       var mfr = entry[0];
       var active = currentManufacturer === mfr ? 'active' : '';
@@ -331,15 +331,15 @@ function render() {
     });
   }
   toolHtml += '<select class="sort-select" onchange="changeSort(this.value)">';
-  toolHtml += '<option value="title"' + (sortBy==='title'?' selected':'') + '>ã¿ã¤ãã«é </option>';
-  toolHtml += '<option value="size_desc"' + (sortBy==='size_desc'?' selected':'') + '>ãµã¤ãº (å¤§âå°)</option>';
-  toolHtml += '<option value="size_asc"' + (sortBy==='size_asc'?' selected':'') + '>ãµã¤ãº (å°âå¤§)</option>';
-  toolHtml += '<option value="manufacturer"' + (sortBy==='manufacturer'?' selected':'') + '>ã¡ã¼ã«ã¼é </option>';
+  toolHtml += '<option value="title"' + (sortBy==='title'?' selected':'') + '>タイトル順</option>';
+  toolHtml += '<option value="size_desc"' + (sortBy==='size_desc'?' selected':'') + '>サイズ (大→小)</option>';
+  toolHtml += '<option value="size_asc"' + (sortBy==='size_asc'?' selected':'') + '>サイズ (小→大)</option>';
+  toolHtml += '<option value="manufacturer"' + (sortBy==='manufacturer'?' selected':'') + '>メーカー順</option>';
   toolHtml += '</select>';
   document.getElementById('toolbar').innerHTML = toolHtml;
 
   if (data.length === 0) {
-    document.getElementById('content').innerHTML = '<div class="empty-state"><p>è©²å½ãããã³ãã¬ãããè¦ã¤ããã¾ããã§ãã</p></div>';
+    document.getElementById('content').innerHTML = '<div class="empty-state"><p>該当するパンフレットが見つかりませんでした</p></div>';
     return;
   }
 
@@ -353,11 +353,11 @@ function render() {
 function renderTable(data) {
   var html = '<div class="table-container"><table><thead><tr>';
   html += '<th style="width:44px;text-align:center">#</th>';
-  html += '<th>ã¿ã¤ãã« <span class="sort-icon">â¼</span></th>';
-  html += '<th>ã«ãã´ãª</th>';
-  html += '<th>ã¡ã¼ã«ã¼ <span class="sort-icon">â¼</span></th>';
-  html += '<th>ã¿ã°</th>';
-  html += '<th>ãµã¤ãº <span class="sort-icon">â¼</span></th>';
+  html += '<th>タイトル <span class="sort-icon">▼</span></th>';
+  html += '<th>カテゴリ</th>';
+  html += '<th>メーカー <span class="sort-icon">▼</span></th>';
+  html += '<th>タグ</th>';
+  html += '<th>サイズ <span class="sort-icon">▼</span></th>';
   html += '<th style="width:56px">PDF</th>';
   html += '</tr></thead><tbody>';
   data.forEach(function(r, i) {
@@ -367,10 +367,10 @@ function renderTable(data) {
     html += '<td class="cell-no">' + (i + 1) + '</td>';
     html += '<td><span class="cell-title" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">' + esc(r.title) + '</span></td>';
     html += '<td><span class="cell-category ' + catClass + '">' + esc(r.category) + '</span></td>';
-    html += '<td class="cell-mfr">' + (r.manufacturer ? esc(r.manufacturer) : 'â') + '</td>';
+    html += '<td class="cell-mfr">' + (r.manufacturer ? esc(r.manufacturer) : '–') + '</td>';
     html += '<td>' + tags + '</td>';
     html += '<td class="cell-size">' + formatSize(r.file_size) + '</td>';
-    html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">ð éã</span></td>';
+    html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">📄 開く</span></td>';
     html += '</tr>';
   });
   html += '</tbody></table></div>';
@@ -387,7 +387,7 @@ function renderCards(data) {
     html += '<div class="card" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">';
     html += '<div class="card-title">' + esc(r.title) + '</div>';
     html += '<div class="card-meta">' + catTag + mfr + tags + '</div>';
-    html += '<div class="card-info"><span>ð ' + size + '</span><span>ð ' + esc(r.storage_key) + '</span></div>';
+    html += '<div class="card-info"><span>📄 ' + size + '</span><span>🔑 ' + esc(r.storage_key) + '</span></div>';
     html += '</div>';
   });
   html += '</div>';
@@ -419,7 +419,7 @@ function closeModal(e) {
   document.getElementById('pdfFrame').src = '';
   document.getElementById('translatePanel').style.display = 'none';
   document.getElementById('pdfFrame').style.display = '';
-  document.getElementById('modalTranslate').textContent = 'Googleç¿»è¨³ã§éã';
+  document.getElementById('modalTranslate').textContent = 'Google翻訳で開く';
   document.body.style.overflow = '';
 }
 
@@ -432,32 +432,32 @@ async function translatePdf() {
   if (panel.style.display === 'block') {
     panel.style.display = 'none';
     frame.style.display = '';
-    btn.textContent = 'Googleç¿»è¨³ã§éã';
+    btn.textContent = 'Google翻訳で開く';
     return;
   }
   panel.style.display = 'block';
   frame.style.display = 'none';
-  btn.textContent = 'åæPDFã«æ»ã';
-  panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>PDFãããã­ã¹ããæ½åºä¸­...</div>';
+  btn.textContent = '原文PDFに戻す';
+  panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>PDFからテキストを抽出中...</div>';
   try {
     var url = document.getElementById('modalDownload').href;
     pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
     var pdf = await pdfjsLib.getDocument(url).promise;
     var pages = [];
     for (var i = 1; i <= pdf.numPages; i++) {
-      panel.querySelector('.tp-progress').innerHTML = '<div class="spinner"></div><br>ãã­ã¹ãæ½åºä¸­... (' + i + '/' + pdf.numPages + 'ãã¼ã¸)';
+      panel.querySelector('.tp-progress').innerHTML = '<div class="spinner"></div><br>テキスト抽出中... (' + i + '/' + pdf.numPages + 'ページ)';
       var pg = await pdf.getPage(i);
       var tc = await pg.getTextContent();
       var t = tc.items.map(function(x){return x.str;}).join(' ').trim();
       if (t) pages.push({num:i, text:t});
     }
     if (pages.length === 0) {
-      panel.innerHTML = '<div class="tp-progress">ãã­ã¹ããè¦ã¤ããã¾ããã§ããããã®PDFã¯ç»åãã¼ã¹ã®å¯è½æ§ãããã¾ãã</div>';
+      panel.innerHTML = '<div class="tp-progress">テキストが見つかりませんでした。このPDFは画像ベースの可能性があります。</div>';
       return;
     }
     var html = '';
     for (var j = 0; j < pages.length; j++) {
-      panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>ç¿»è¨³ä¸­... (' + (j+1) + '/' + pages.length + 'ãã¼ã¸)</div>' + html;
+      panel.innerHTML = '<div class="tp-progress"><div class="spinner"></div><br>翻訳中... (' + (j+1) + '/' + pages.length + 'ページ)</div>' + html;
       var chunks = [];
       var src = pages[j].text;
       while (src.length > 0) { chunks.push(src.substring(0, 4500)); src = src.substring(4500); }
@@ -467,11 +467,11 @@ async function translatePdf() {
         var d = await r.json();
         for (var m = 0; m < d[0].length; m++) { if(d[0][m][0]) translated += d[0][m][0]; }
       }
-      html += '<div class="tp-page"><div class="tp-num">â ãã¼ã¸ ' + pages[j].num + ' â</div><div class="tp-text">' + esc(translated) + '</div></div>';
+      html += '<div class="tp-page"><div class="tp-num">— ページ ' + pages[j].num + ' —</div><div class="tp-text">' + esc(translated) + '</div></div>';
     }
     panel.innerHTML = html;
   } catch(e) {
-    panel.innerHTML = '<div class="tp-progress">ç¿»è¨³ã¨ã©ã¼: ' + esc(String(e.message || e)) + '</div>';
+    panel.innerHTML = '<div class="tp-progress">翻訳エラー: ' + esc(String(e.message || e)) + '</div>';
   }
 }
 
@@ -480,25 +480,25 @@ function exportExcel() {
   var rows = data.map(function(r, i) {
     return {
       '#': i + 1,
-      'ã¿ã¤ãã«': r.title || '',
-      'ã«ãã´ãª': r.category || '',
-      'ã¡ã¼ã«ã¼': r.manufacturer || '',
-      'ã¿ã°': (r.tags || []).join(', '),
-      'ãã¡ã¤ã«ãµã¤ãº': formatSize(r.file_size),
-      'ãã¡ã¤ã«å': r.filename || '',
+      'タイトル': r.title || '',
+      'カテゴリ': r.category || '',
+      'メーカー': r.manufacturer || '',
+      'タグ': (r.tags || []).join(', '),
+      'ファイルサイズ': formatSize(r.file_size),
+      'ファイル名': r.filename || '',
       'PDF URL': r.storage_url || ''
     };
   });
   var ws = XLSX.utils.json_to_sheet(rows);
   ws['!cols'] = [{wch:5},{wch:50},{wch:20},{wch:15},{wch:20},{wch:12},{wch:40},{wch:60}];
   var wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'ãã³ãã¬ããä¸è¦§');
-  var catName = currentCategory || 'ãã¹ã¦';
-  XLSX.writeFile(wb, 'ãã³ãã¬ããDB_' + catName + '.xlsx');
+  XLSX.utils.book_append_sheet(wb, ws, 'パンフレット一覧');
+  var catName = currentCategory || 'すべて';
+  XLSX.writeFile(wb, 'パンフレットDB_' + catName + '.xlsx');
 }
 
 function formatSize(bytes) {
-  if (!bytes) return 'ä¸æ';
+  if (!bytes) return '不明';
   if (bytes < 1024) return bytes + ' B';
   if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
   return (bytes / 1048576).toFixed(1) + ' MB';
