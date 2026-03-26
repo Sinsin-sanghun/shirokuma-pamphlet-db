@@ -30,7 +30,7 @@ body { font-family:'Noto Sans JP','Segoe UI',sans-serif; background:#f5f6f8; col
 }
 .header-logo { font-size:17px; font-weight:700; color:var(--accent); white-space:nowrap; }
 .header-logo span { color:var(--sidebar-text); font-weight:400; margin-left:8px; font-size:13px; }
-.header-search { flex:1; max-width:460px; margin:0 28px; position:relative; }
+.header-search { flex:1; max-width:520px; margin:0 28px; position:relative; display:flex; align-items:center; }
 .header-search input {
   width:100%; padding:7px 14px 7px 36px; border-radius:6px; border:1px solid #3a4055;
   background:#252b3d; color:#e0e0e0; font-size:13px; outline:none;
@@ -41,6 +41,8 @@ body { font-family:'Noto Sans JP','Segoe UI',sans-serif; background:#f5f6f8; col
 .header-count { font-size:12px; color:#9ca3af; white-space:nowrap; }
 .btn-excel { padding:6px 14px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; font-family:inherit; }
 .btn-excel:hover { background:var(--accent-light); }
+.btn-search { padding:6px 16px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; cursor:pointer; margin-left:8px; }
+.btn-search:hover { background:var(--accent-light); }
 
 /* Layout */
 .layout { display:flex; height:calc(100vh - var(--header-height)); margin-top:var(--header-height); }
@@ -184,7 +186,8 @@ tbody tr:last-child td { border-bottom:none; }
   <div class="header-logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
   <div class="header-search">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." oninput="handleSearch()">
+    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." onkeydown="if(event.key==='Enter')handleSearch()">
+    <button class="btn-search" onclick="handleSearch()">検索</button>
   </div>
   <div class="header-right">
     <div class="header-count" id="headerCount"></div>
@@ -693,7 +696,8 @@ tbody tr:last-child td { border-bottom:none; }
   <div class="header-logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
   <div class="header-search">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." oninput="handleSearch()">
+    <input type="text" id="searchInput" placeholder="タイトル・メーカー・ファイル名で検索..." onkeydown="if(event.key==='Enter')handleSearch()">
+    <button class="btn-search" onclick="handleSearch()">検索</button>
   </div>
   <div class="header-right">
     <div class="header-count" id="headerCount"></div>
