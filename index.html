@@ -43,6 +43,8 @@ body { font-family:'Noto Sans JP','Segoe UI',sans-serif; background:#f5f6f8; col
 .btn-excel:hover { background:var(--accent-light); }
 .btn-search { padding:6px 16px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; cursor:pointer; margin-left:8px; white-space:nowrap; }
 .btn-search:hover { background:var(--accent-light); }
+    .search-highlight { background:#ffe066; color:#1a1a2e; padding:0 2px; border-radius:2px; }
+    .sidebar-search-count { font-size:10px; color:#f39c12; margin-left:4px; }
 
 /* Layout */
 .layout { display:flex; height:calc(100vh - var(--header-height)); margin-top:var(--header-height); }
@@ -257,7 +259,15 @@ const CATEGORY_CLASSES = {
   '風力発電': 'cat-wind', '洋上風力・海事': 'cat-wind'
 };
 
-async function fetchData() {
+
+    function highlightText(text, query) {
+      if (!query || !text) return esc(text);
+      var escaped = esc(text);
+      var q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\async function fetchData()');
+      var re = new RegExp('(' + q + ')', 'gi');
+      return escaped.replace(re, '<span class="search-highlight">$1</span>');
+    }
+    async function fetchData() {
   const resp = await fetch(SUPABASE_URL + '/rest/v1/pamphlets?select=*&order=title', {
     headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
@@ -272,12 +282,15 @@ function buildSidebar() {
   allData.forEach(function(r) { cats[r.category] = (cats[r.category] || 0) + 1; });
   var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
   var html = '<div class="sidebar-title">カテゴリ</div>';
-  html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">📁</span>すべて<span class="sidebar-count">' + allData.length + '</span></div>';
+  var totalSearchCount = searchQuery ? Object.values(filteredCats).reduce(function(a,b){return a+b;}, 0) : 0;
+      var allSearchLabel = searchQuery ? '<span class="sidebar-search-count">(' + totalSearchCount + ')</span>' : '';
+      html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">📁</span>すべて' + allSearchLabel + '<span class="sidebar-count">' + allData.length + '</span></div>';
   sorted.forEach(function(entry) {
     var cat = entry[0], count = entry[1];
     var icon = CATEGORY_ICONS[cat] || '📁';
     var active = currentCategory === cat ? 'active' : '';
-    html += '<div class="sidebar-item ' + active + '" onclick="selectCategory(\'' + cat.replace(/'/g, "\\\'" ) + '\')"><span class="sidebar-icon">' + icon + '</span>' + esc(cat) + '<span class="sidebar-count">' + count + '</span></div>';
+    var searchCount = searchQuery && filteredCats[cat] ? '<span class="sidebar-search-count">(' + filteredCats[cat] + ')</span>' : '';
+        html += '<div class="sidebar-item ' + active + '" onclick="selectCategory(\'' + cat.replace(/'/g, "\\\'" ) + '\')"><span class="sidebar-icon">' + icon + '</span>' + esc(cat) + searchCount + '<span class="sidebar-count">' + count + '</span></div>';
   });
   document.getElementById('sidebar').innerHTML = html;
 }
@@ -365,9 +378,9 @@ function renderTable(data) {
     var tags = (r.tags || []).map(function(t) { return '<span class="cell-tag">' + esc(t) + '</span>'; }).join('');
     html += '<tr>';
     html += '<td class="cell-no">' + (i + 1) + '</td>';
-    html += '<td><span class="cell-title" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">' + esc(r.title) + '</span></td>';
+    html += '<td><span class="cell-title" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">' + (searchQuery ? highlightText(r.title, searchQuery) : esc(r.title)) + '</span></td>';
     html += '<td><span class="cell-category ' + catClass + '">' + esc(r.category) + '</span></td>';
-    html += '<td class="cell-mfr">' + (r.manufacturer ? esc(r.manufacturer) : '–') + '</td>';
+    html += '<td class="cell-mfr">' + (r.manufacturer ? (searchQuery ? highlightText(r.manufacturer, searchQuery) : esc(r.manufacturer)) : '–') + '</td>';
     html += '<td>' + tags + '</td>';
     html += '<td class="cell-size">' + formatSize(r.file_size) + '</td>';
     html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">📄 開く</span></td>';
