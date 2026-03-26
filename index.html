@@ -1,4 +1,62 @@
-<!DOCTYPE html>
+<!DOCTYP  // === Auth ===
+  const ALLOWED_DOMAIN = "shirokumapower.com";
+  const sbClient = supabase.createClient(
+    "https://manowprcyrfqonzdoqja.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbm93cHJjeXJmcW9uemRvcWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMTU5NDIsImV4cCI6MjA4ODc5MTk0Mn0.eZ9UHW041t85kLBglI_CK6p0uX5dRVMbWyJO0oR50Kc"
+  );
+
+  async function checkAuth() {
+    var overlay = document.getElementById("loginOverlay");
+    var resp = await sbClient.auth.getSession();
+    var session = resp.data.session;
+    if (session && session.user) {
+      var email = session.user.email || "";
+      if (email.endsWith("@" + ALLOWED_DOMAIN)) {
+        overlay.style.display = "none";
+        document.getElementById("headerUser").style.display = "flex";
+        document.getElementById("headerEmail").textContent = email;
+        return true;
+      } else {
+        await sbClient.auth.signOut();
+        document.getElementById("loginError").textContent = email + " は許可されていません。@" + ALLOWED_DOMAIN + " のアカウントでログインしてください。";
+        document.getElementById("loginError").style.display = "block";
+      }
+    }
+    overlay.style.display = "flex";
+    return false;
+  }
+
+  async function googleLogin() {
+    document.getElementById("loginError").style.display = "none";
+    document.getElementById("loginLoading").style.display = "block";
+    var result = await sbClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + window.location.pathname,
+        queryParams: { hd: ALLOWED_DOMAIN }
+      }
+    });
+    if (result.error) {
+      document.getElementById("loginLoading").style.display = "none";
+      document.getElementById("loginError").textContent = "ログインエラー: " + result.error.message;
+      document.getElementById("loginError").style.display = "block";
+    }
+  }
+
+  async function logoutUser() {
+    await sbClient.auth.signOut();
+    document.getElementById("headerUser").style.display = "none";
+    document.getElementById("loginOverlay").style.display = "flex";
+    document.getElementById("loginError").style.display = "none";
+  }
+
+  sbClient.auth.onAuthStateChange(function(event, session) {
+    if (event === "SIGNED_IN" && session) {
+      checkAuth();
+    }
+  });
+
+E html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -8,6 +66,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root {
   --sidebar-bg: #1a1f2e;
@@ -180,9 +239,41 @@ tbody tr:last-child td { border-bottom:none; }
   .cards { grid-template-columns:1fr; }
   .modal { width:98vw; height:95vh; }
 }
-</style>
+
+  /* Login overlay */
+  .login-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg,#1a1f2e 0%,#2a3350 100%); z-index:9999; display:flex; align-items:center; justify-content:center; }
+  .login-box { background:#fff; border-radius:16px; padding:48px 40px; text-align:center; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+  .login-box .logo { font-size:24px; font-weight:700; color:#e67e22; margin-bottom:8px; }
+  .login-box .logo span { color:#6b7280; font-weight:400; font-size:14px; margin-left:8px; }
+  .login-box .subtitle { color:#9ca3af; font-size:13px; margin-bottom:32px; }
+  .login-box .desc { color:#6b7280; font-size:13px; margin-bottom:24px; line-height:1.6; }
+  .btn-google { display:inline-flex; align-items:center; gap:10px; padding:12px 28px; border-radius:8px; border:1px solid #d1d5db; background:#fff; color:#374151; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+  .btn-google:hover { background:#f9fafb; border-color:#e67e22; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+  .btn-google svg { width:20px; height:20px; }
+  .login-error { color:#ef4444; font-size:12px; margin-top:16px; display:none; }
+  .login-loading { color:#9ca3af; font-size:13px; margin-top:16px; display:none; }
+  .header-user { display:flex; align-items:center; gap:8px; margin-left:12px; }
+  .header-user-email { font-size:11px; color:#9ca3af; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .btn-logout { padding:4px 10px; border-radius:4px; border:1px solid #4b5563; background:transparent; color:#9ca3af; font-size:11px; cursor:pointer; font-family:inherit; }
+  .btn-logout:hover { border-color:#ef4444; color:#ef4444; }
+  </style>
 </head>
 <body>
+
+<div class="login-overlay" id="loginOverlay">
+  <div class="login-box">
+    <div class="logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
+    <div class="subtitle">社内専用データベース</div>
+    <div class="desc">このサイトは @shirokumapower.com<br>メールアドレスをお持ちの方のみご利用いただけます。</div>
+    <button class="btn-google" id="btnGoogleLogin" onclick="googleLogin()">
+      <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+      Googleアカウントでログイン
+    </button>
+    <div class="login-error" id="loginError"></div>
+    <div class="login-loading" id="loginLoading">認証中...</div>
+  </div>
+</div>
+
 
 <header class="header">
   <div class="header-logo">EXPO/展示会-パンフレットDB<span>しろくま</span></div>
@@ -192,6 +283,10 @@ tbody tr:last-child td { border-bottom:none; }
     <button class="btn-search" onclick="handleSearch()">検索</button>
   </div>
   <div class="header-right">
+      <div class="header-user" id="headerUser" style="display:none">
+        <span class="header-user-email" id="headerEmail"></span>
+        <button class="btn-logout" onclick="logoutUser()">ログアウト</button>
+      </div>
     <div class="header-count" id="headerCount"></div>
     <button class="btn-excel" onclick="exportExcel()">📥 Excel出力</button>
   </div>
@@ -268,6 +363,9 @@ const CATEGORY_CLASSES = {
       return escaped.replace(re, '<span class="search-highlight">$1</span>');
     }
     async function fetchData() {
+  var authed = await checkAuth();
+  if (!authed) return;
+
   const resp = await fetch(SUPABASE_URL + '/rest/v1/pamphlets?select=*&order=title', {
     headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
   });
