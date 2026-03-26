@@ -208,7 +208,7 @@ tbody tr:last-child td { border-bottom:none; }
       <div class="modal-title" id="modalTitle"></div>
       <div class="modal-actions">
         <a class="modal-btn" id="modalDownload" href="#" target="_blank">新しいタブで開く</a>
-        <a class="modal-btn translate" id="modalTranslate" href="#" target="_blank">日本語に翻訳</a>
+        <a class="modal-btn translate" id="modalTranslate" href="#" target="_blank">Google翻訳で開く</a>
         <button class="modal-btn close" onclick="closeModal()">閉じる</button>
       </div>
     </div>
@@ -397,7 +397,7 @@ function openPdf(url, title) {
   document.getElementById('modalTitle').textContent = title;
   document.getElementById('pdfFrame').src = url;
   document.getElementById('modalDownload').href = url;
-  document.getElementById('modalTranslate').href = 'https://translate.google.com/translate?sl=en&tl=ja&u=' + encodeURIComponent('https://docs.google.com/gview?url=' + encodeURIComponent(url));
+  document.getElementById('modalTranslate').href = 'https://translate.google.co.jp/?sl=en&tl=ja&op=docs';
   document.getElementById('modalOverlay').classList.add('active');
   document.body.style.overflow = 'hidden';
 }
