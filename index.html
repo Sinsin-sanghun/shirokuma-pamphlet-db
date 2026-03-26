@@ -263,7 +263,7 @@ const CATEGORY_CLASSES = {
     function highlightText(text, query) {
       if (!query || !text) return esc(text);
       var escaped = esc(text);
-      var q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\async function fetchData()');
+      var q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
       var re = new RegExp('(' + q + ')', 'gi');
       return escaped.replace(re, '<span class="search-highlight">$1</span>');
     }
@@ -280,6 +280,18 @@ const CATEGORY_CLASSES = {
 function buildSidebar() {
   var cats = {};
   allData.forEach(function(r) { cats[r.category] = (cats[r.category] || 0) + 1; });
+    var filteredCats = {};
+  if (searchQuery) {
+    var sq = searchQuery.toLowerCase();
+    allData.forEach(function(r) {
+      if ((r.title && r.title.toLowerCase().indexOf(sq) >= 0) ||
+          (r.manufacturer && r.manufacturer.toLowerCase().indexOf(sq) >= 0) ||
+          (r.filename && r.filename.toLowerCase().indexOf(sq) >= 0) ||
+          (r.tags && r.tags.some(function(t) { return t.toLowerCase().indexOf(sq) >= 0; }))) {
+        filteredCats[r.category] = (filteredCats[r.category] || 0) + 1;
+      }
+    });
+  }
   var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
   var html = '<div class="sidebar-title">カテゴリ</div>';
   var totalSearchCount = searchQuery ? Object.values(filteredCats).reduce(function(a,b){return a+b;}, 0) : 0;
