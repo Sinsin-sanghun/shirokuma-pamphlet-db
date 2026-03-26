@@ -1,62 +1,4 @@
-<!DOCTYP  // === Auth ===
-  const ALLOWED_DOMAIN = "shirokumapower.com";
-  const sbClient = supabase.createClient(
-    "https://manowprcyrfqonzdoqja.supabase.co",
-    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbm93cHJjeXJmcW9uemRvcWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMTU5NDIsImV4cCI6MjA4ODc5MTk0Mn0.eZ9UHW041t85kLBglI_CK6p0uX5dRVMbWyJO0oR50Kc"
-  );
-
-  async function checkAuth() {
-    var overlay = document.getElementById("loginOverlay");
-    var resp = await sbClient.auth.getSession();
-    var session = resp.data.session;
-    if (session && session.user) {
-      var email = session.user.email || "";
-      if (email.endsWith("@" + ALLOWED_DOMAIN)) {
-        overlay.style.display = "none";
-        document.getElementById("headerUser").style.display = "flex";
-        document.getElementById("headerEmail").textContent = email;
-        return true;
-      } else {
-        await sbClient.auth.signOut();
-        document.getElementById("loginError").textContent = email + " は許可されていません。@" + ALLOWED_DOMAIN + " のアカウントでログインしてください。";
-        document.getElementById("loginError").style.display = "block";
-      }
-    }
-    overlay.style.display = "flex";
-    return false;
-  }
-
-  async function googleLogin() {
-    document.getElementById("loginError").style.display = "none";
-    document.getElementById("loginLoading").style.display = "block";
-    var result = await sbClient.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: window.location.origin + window.location.pathname,
-        queryParams: { hd: ALLOWED_DOMAIN }
-      }
-    });
-    if (result.error) {
-      document.getElementById("loginLoading").style.display = "none";
-      document.getElementById("loginError").textContent = "ログインエラー: " + result.error.message;
-      document.getElementById("loginError").style.display = "block";
-    }
-  }
-
-  async function logoutUser() {
-    await sbClient.auth.signOut();
-    document.getElementById("headerUser").style.display = "none";
-    document.getElementById("loginOverlay").style.display = "flex";
-    document.getElementById("loginError").style.display = "none";
-  }
-
-  sbClient.auth.onAuthStateChange(function(event, session) {
-    if (event === "SIGNED_IN" && session) {
-      checkAuth();
-    }
-  });
-
-E html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -328,6 +270,64 @@ tbody tr:last-child td { border-bottom:none; }
 </div>
 
 <script>
+  // === Auth ===
+  const ALLOWED_DOMAIN = "shirokumapower.com";
+  const sbClient = supabase.createClient(
+    "https://manowprcyrfqonzdoqja.supabase.co",
+    "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbm93cHJjeXJmcW9uemRvcWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMTU5NDIsImV4cCI6MjA4ODc5MTk0Mn0.eZ9UHW041t85kLBglI_CK6p0uX5dRVMbWyJO0oR50Kc"
+  );
+
+  async function checkAuth() {
+    var overlay = document.getElementById("loginOverlay");
+    var resp = await sbClient.auth.getSession();
+    var session = resp.data.session;
+    if (session && session.user) {
+      var email = session.user.email || "";
+      if (email.endsWith("@" + ALLOWED_DOMAIN)) {
+        overlay.style.display = "none";
+        document.getElementById("headerUser").style.display = "flex";
+        document.getElementById("headerEmail").textContent = email;
+        return true;
+      } else {
+        await sbClient.auth.signOut();
+        document.getElementById("loginError").textContent = email + " は許可されていません。@" + ALLOWED_DOMAIN + " のアカウントでログインしてください。";
+        document.getElementById("loginError").style.display = "block";
+      }
+    }
+    overlay.style.display = "flex";
+    return false;
+  }
+
+  async function googleLogin() {
+    document.getElementById("loginError").style.display = "none";
+    document.getElementById("loginLoading").style.display = "block";
+    var result = await sbClient.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: window.location.origin + window.location.pathname,
+        queryParams: { hd: ALLOWED_DOMAIN }
+      }
+    });
+    if (result.error) {
+      document.getElementById("loginLoading").style.display = "none";
+      document.getElementById("loginError").textContent = "ログインエラー: " + result.error.message;
+      document.getElementById("loginError").style.display = "block";
+    }
+  }
+
+  async function logoutUser() {
+    await sbClient.auth.signOut();
+    document.getElementById("headerUser").style.display = "none";
+    document.getElementById("loginOverlay").style.display = "flex";
+    document.getElementById("loginError").style.display = "none";
+  }
+
+  sbClient.auth.onAuthStateChange(function(event, session) {
+    if (event === "SIGNED_IN" && session) {
+      checkAuth();
+    }
+  });
+
 const SUPABASE_URL = 'https://manowprcyrfqonzdoqja.supabase.co';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hbm93cHJjeXJmcW9uemRvcWphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzMyMTU5NDIsImV4cCI6MjA4ODc5MTk0Mn0.eZ9UHW041t85kLBglI_CK6p0uX5dRVMbWyJO0oR50Kc';
 
