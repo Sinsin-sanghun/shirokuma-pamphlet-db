@@ -3,6 +3,912 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB ãããã¾</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+    <style>
+        :root {
+            --sidebar-bg: #1a1f2e;
+            --sidebar-hover: #252b3d;
+            --sidebar-active: #2a3350;
+            --sidebar-text: #c8cdd8;
+            --sidebar-muted: #6b7280;
+            --accent: #e67e22;
+            --accent-light: #f39c12;
+            --sidebar-width: 230px;
+            --header-height: 56px;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; }
+        body { font-family:'Noto Sans JP','Segoe UI',sans-serif; background:#f5f6f8; color:#1a1a2e; overflow:hidden; height:100vh; }
+        .header { height:var(--header-height); background:var(--sidebar-bg); border-bottom:1px solid #2a2f40; display:flex; align-items:center; padding:0 20px; position:fixed; top:0; left:0; right:0; z-index:100; }
+        .header-logo { font-size:17px; font-weight:700; color:var(--accent); white-space:nowrap; }
+        .header-logo span { color:var(--sidebar-text); font-weight:400; margin-left:8px; font-size:13px; }
+        .header-search { flex:1; max-width:520px; margin:0 28px; position:relative; display:flex; align-items:center; }
+        .header-search input { width:100%; padding:7px 14px 7px 36px; border-radius:6px; border:1px solid #3a4055; background:#252b3d; color:#e0e0e0; font-size:13px; outline:none; }
+        .header-search input:focus { border-color:var(--accent); }
+        .header-search svg { position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#6b7280; }
+        .header-right { display:flex; gap:10px; align-items:center; margin-left:auto; }
+        .header-count { font-size:12px; color:#9ca3af; white-space:nowrap; }
+        .btn-excel { padding:6px 14px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; font-family:inherit; }
+        .btn-excel:hover { background:var(--accent-light); }
+        .btn-search { padding:6px 16px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; cursor:pointer; margin-left:8px; white-space:nowrap; }
+        .btn-search:hover { background:var(--accent-light); }
+        .search-highlight { background:#ffe066; color:#1a1a2e; padding:0 2px; border-radius:2px; }
+        .sidebar-search-count { font-size:10px; color:#f39c12; margin-left:4px; }
+        .layout { display:flex; height:calc(100vh - var(--header-height)); margin-top:var(--header-height); }
+        .sidebar { width:var(--sidebar-width); min-width:var(--sidebar-width); background:var(--sidebar-bg); border-right:1px solid #2a2f40; overflow-y:auto; padding:14px 0; }
+        .sidebar-title { font-size:11px; color:var(--sidebar-muted); padding:0 16px; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px; }
+        .sidebar-item { display:flex; align-items:center; padding:7px 16px; cursor:pointer; font-size:13px; gap:8px; color:var(--sidebar-text); transition:background 0.15s; border-left:3px solid transparent; }
+        .sidebar-item:hover { background:var(--sidebar-hover); }
+        .sidebar-item.active { background:var(--sidebar-active); color:var(--accent); font-weight:600; border-left-color:var(--accent); }
+        .sidebar-icon { width:18px; text-align:center; font-size:14px; }
+        .sidebar-count { margin-left:auto; background:var(--accent); color:#fff; font-size:10px; font-weight:700; padding:1px 7px; border-radius:10px; min-width:28px; text-align:center; }
+        .sidebar-divider { border-top:1px solid #2a2f40; margin:10px 16px; }
+        .main { flex:1; overflow-y:auto; padding:20px 24px; background:#fff; }
+        .main-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+        .main-title-area { display:flex; align-items:center; gap:8px; }
+        .main-title { font-size:18px; font-weight:700; color:#1a1a2e; }
+        .main-count { font-size:13px; color:#9ca3af; font-weight:400; }
+        .view-toggle { display:flex; gap:4px; }
+        .btn-toggle { padding:5px 12px; border-radius:5px; border:1px solid #d1d5db; background:#fff; color:#6b7280; font-size:12px; cursor:pointer; font-family:inherit; }
+        .btn-toggle:hover { background:#f3f4f6; }
+        .btn-toggle.active { background:#1a1f2e; color:#fff; border-color:#1a1f2e; }
+        .toolbar { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; align-items:center; }
+        .toolbar-label { font-size:12px; color:#9ca3af; margin-right:2px; }
+        .btn-filter { padding:4px 10px; border-radius:4px; border:1px solid #e5e7eb; background:#fff; color:#6b7280; font-size:11px; cursor:pointer; font-family:inherit; }
+        .btn-filter:hover { background:#f9fafb; border-color:#d1d5db; }
+        .btn-filter.active { background:var(--accent); color:#fff; border-color:var(--accent); }
+        .sort-select { padding:5px 10px; border-radius:5px; border:1px solid #d1d5db; background:#fff; color:#374151; font-size:12px; font-family:inherit; cursor:pointer; margin-left:auto; }
+        .table-container { border:1px solid #e5e7eb; border-radius:8px; overflow:hidden; }
+        table { width:100%; border-collapse:collapse; font-size:13px; }
+        thead { background:#f8f9fb; }
+        th { padding:9px 14px; text-align:left; font-weight:600; color:#6b7280; font-size:11px; border-bottom:2px solid #e5e7eb; white-space:nowrap; cursor:pointer; user-select:none; text-transform:uppercase; letter-spacing:0.3px; }
+        th:hover { color:var(--accent); }
+        th .sort-icon { margin-left:3px; font-size:9px; color:#d1d5db; }
+        td { padding:9px 14px; border-bottom:1px solid #f0f1f3; color:#374151; }
+        tbody tr:hover { background:#fef7f0; }
+        tbody tr:last-child td { border-bottom:none; }
+        .cell-title { color:#2563eb; cursor:pointer; font-weight:500; font-size:13px; }
+        .cell-title:hover { text-decoration:underline; color:#1d4ed8; }
+        .cell-category { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:600; white-space:nowrap; }
+        .cat-bess { background:#dcfce7; color:#166534; }
+        .cat-pcs { background:#dbeafe; color:#1e40af; }
+        .cat-other { background:#fef3c7; color:#92400e; }
+        .cat-expo { background:#f3e8ff; color:#6b21a8; }
+        .cat-test { background:#e0e7ff; color:#3730a3; }
+        .cat-solar { background:#fef9c3; color:#854d0e; }
+        .cat-wind { background:#e0f2fe; color:#075985; }
+        .cat-default { background:#f3f4f6; color:#4b5563; }
+        .cell-tag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:10px; background:#f3f4f6; color:#6b7280; margin-right:3px; margin-bottom:1px; }
+        .cell-size { color:#9ca3af; white-space:nowrap; font-size:12px; }
+        .cell-mfr { font-weight:600; color:#374151; }
+        .cell-no { color:#d1d5db; font-size:12px; text-align:center; }
+        .cell-pdf { color:var(--accent); cursor:pointer; font-size:12px; font-weight:500; white-space:nowrap; }
+        .cell-pdf:hover { color:var(--accent-light); text-decoration:underline; }
+        .cards { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); gap:16px; }
+        .card { background:#f8f9fb; border-radius:10px; padding:18px; cursor:pointer; border:1px solid #e5e7eb; transition:all 0.2s; }
+        .card:hover { border-color:var(--accent); transform:translateY(-2px); box-shadow:0 4px 16px rgba(0,0,0,0.08); }
+        .card-title { font-size:14px; font-weight:600; line-height:1.5; margin-bottom:8px; color:#1a1a2e; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; }
+        .card-meta { display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:8px; }
+        .card-tag { font-size:11px; padding:2px 8px; border-radius:4px; background:#eef2ff; color:#4338ca; }
+        .card-mfr { font-size:11px; padding:2px 8px; border-radius:4px; background:#dcfce7; color:#166534; }
+        .card-info { font-size:12px; color:#9ca3af; display:flex; gap:12px; }
+        .card-info span { display:flex; align-items:center; gap:4px; }
+        .modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.6); z-index:200; justify-content:center; align-items:center; }
+        .modal-overlay.active { display:flex; }
+        .modal { background:#fff; border-radius:12px; width:90vw; height:90vh; display:flex; flex-direction:column; overflow:hidden; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .modal-header { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid #e5e7eb; min-height:52px; background:#f8f9fb; }
+        .modal-title { font-size:14px; font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; margin-right:16px; color:#1a1a2e; }
+        .modal-actions { display:flex; gap:8px; }
+        .modal-btn { padding:7px 14px; border-radius:6px; border:1px solid #d1d5db; background:#fff; color:#374151; font-size:12px; cursor:pointer; font-family:inherit; text-decoration:none; display:inline-flex; align-items:center; gap:6px; }
+        .modal-btn:hover { border-color:var(--accent); color:var(--accent); }
+        .modal-btn.close { background:#ef4444; color:#fff; border-color:#ef4444; }
+        .modal-btn.close:hover { background:#dc2626; }
+        .modal-btn.translate { background:#4285f4; color:#fff; border-color:#4285f4; }
+        .modal-btn.translate:hover { background:#3367d6; border-color:#3367d6; }
+        .translate-panel { display:none; position:absolute; top:0; left:0; right:0; bottom:0; background:#fff; overflow-y:auto; padding:24px; z-index:10; }
+        .translate-panel .tp-page { margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #e0e0e0; }
+        .translate-panel .tp-num { font-weight:bold; color:#4285f4; margin-bottom:8px; font-size:13px; }
+        .translate-panel .tp-text { font-size:14px; line-height:1.8; color:#333; white-space:pre-wrap; }
+        .translate-panel .tp-progress { text-align:center; padding:60px 20px; color:#666; font-size:15px; }
+        .translate-panel .tp-progress .spinner { display:inline-block; width:24px; height:24px; border:3px solid #ddd; border-top-color:#4285f4; border-radius:50%; animation:spin 0.8s linear infinite; margin-bottom:12px; }
+        @keyframes spin { to { transform:rotate(360deg); } }
+        .modal-body { flex:1; position:relative; }
+        .modal-body iframe { width:100%; height:100%; border:none; }
+        .empty-state { text-align:center; padding:60px 20px; color:#9ca3af; }
+        .empty-state p { font-size:14px; }
+        .sidebar::-webkit-scrollbar { width:5px; }
+        .sidebar::-webkit-scrollbar-track { background:transparent; }
+        .sidebar::-webkit-scrollbar-thumb { background:#3a4055; border-radius:3px; }
+        @media (max-width:768px) { .sidebar { display:none; } .cards { grid-template-columns:1fr; } .modal { width:98vw; height:95vh; } }
+        .login-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:linear-gradient(135deg,#1a1f2e 0%,#2a3350 100%); z-index:9999; display:flex; align-items:center; justify-content:center; }
+        .login-box { background:#fff; border-radius:16px; padding:48px 40px; text-align:center; max-width:420px; width:90%; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .login-box .logo { font-size:24px; font-weight:700; color:#e67e22; margin-bottom:8px; }
+        .login-box .logo span { color:#6b7280; font-weight:400; font-size:14px; margin-left:8px; }
+        .login-box .subtitle { color:#9ca3af; font-size:13px; margin-bottom:32px; }
+        .login-box .desc { color:#6b7280; font-size:13px; margin-bottom:24px; line-height:1.6; }
+        .btn-google { display:inline-flex; align-items:center; gap:10px; padding:12px 28px; border-radius:8px; border:1px solid #d1d5db; background:#fff; color:#374151; font-size:14px; font-weight:500; cursor:pointer; font-family:inherit; transition:all 0.2s; }
+        .btn-google:hover { background:#f9fafb; border-color:#e67e22; box-shadow:0 2px 8px rgba(0,0,0,0.08); }
+        .btn-google svg { width:20px; height:20px; }
+        .login-error { color:#ef4444; font-size:12px; margin-top:16px; display:none; }
+        .login-loading { color:#9ca3af; font-size:13px; margin-top:16px; display:none; }
+        .header-user { display:flex; align-items:center; gap:8px; margin-left:12px; }
+        .header-user-email { font-size:11px; color:#9ca3af; max-width:160px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+        .btn-logout { padding:4px 10px; border-radius:4px; border:1px solid #4b5563; background:transparent; color:#9ca3af; font-size:11px; cursor:pointer; font-family:inherit; }
+        .btn-logout:hover { border-color:#ef4444; color:#ef4444; }
+
+        /* === Discontinuation styles === */
+        .row-discontinued { opacity:0.5; background:#f9f9f9 !important; }
+        .row-discontinued:hover { background:#f5f5f5 !important; }
+        .badge-discontinued { display:inline-block; padding:1px 6px; border-radius:3px; font-size:9px; font-weight:700; background:#ef4444; color:#fff; margin-left:6px; vertical-align:middle; }
+        .badge-discontinued-card { display:inline-block; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:700; background:#ef4444; color:#fff; }
+        .card-discontinued { opacity:0.5; }
+        .card-discontinued:hover { opacity:0.7; }
+        .disc-reason { font-size:11px; color:#9ca3af; margin-top:2px; }
+        .disc-successor { font-size:11px; color:#2563eb; cursor:pointer; }
+        .disc-successor:hover { text-decoration:underline; }
+        .btn-disc { padding:3px 8px; border-radius:4px; border:1px solid #ef4444; background:transparent; color:#ef4444; font-size:11px; cursor:pointer; font-family:inherit; white-space:nowrap; }
+        .btn-disc:hover { background:#fef2f2; }
+        .btn-disc-undo { border-color:#10b981; color:#10b981; }
+        .btn-disc-undo:hover { background:#ecfdf5; }
+        .btn-admin { padding:6px 14px; border-radius:6px; border:none; background:#6366f1; color:#fff; font-size:12px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; font-family:inherit; }
+        .btn-admin:hover { background:#4f46e5; }
+
+        /* Discontinue modal */
+        .disc-modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:300; justify-content:center; align-items:center; }
+        .disc-modal-overlay.active { display:flex; }
+        .disc-modal { background:#fff; border-radius:12px; width:480px; max-width:90vw; padding:28px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .disc-modal h3 { font-size:16px; margin-bottom:16px; color:#1a1a2e; }
+        .disc-modal label { display:block; font-size:12px; font-weight:600; color:#6b7280; margin-bottom:4px; margin-top:12px; }
+        .disc-modal select, .disc-modal input, .disc-modal textarea { width:100%; padding:8px 12px; border-radius:6px; border:1px solid #d1d5db; font-size:13px; font-family:inherit; outline:none; }
+        .disc-modal select:focus, .disc-modal input:focus, .disc-modal textarea:focus { border-color:var(--accent); }
+        .disc-modal textarea { resize:vertical; min-height:60px; }
+        .disc-modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:20px; }
+        .disc-modal-actions button { padding:8px 20px; border-radius:6px; border:none; font-size:13px; font-weight:600; cursor:pointer; font-family:inherit; }
+        .btn-disc-confirm { background:#ef4444; color:#fff; }
+        .btn-disc-confirm:hover { background:#dc2626; }
+        .btn-disc-cancel { background:#f3f4f6; color:#374151; }
+        .btn-disc-cancel:hover { background:#e5e7eb; }
+
+        /* Admin modal */
+        .admin-modal-overlay { display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:300; justify-content:center; align-items:center; }
+        .admin-modal-overlay.active { display:flex; }
+        .admin-modal { background:#fff; border-radius:12px; width:540px; max-width:90vw; max-height:80vh; display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+        .admin-modal-header { padding:20px 24px 16px; border-bottom:1px solid #e5e7eb; }
+        .admin-modal-header h3 { font-size:16px; color:#1a1a2e; }
+        .admin-modal-body { padding:16px 24px; overflow-y:auto; flex:1; }
+        .admin-modal-footer { padding:16px 24px; border-top:1px solid #e5e7eb; display:flex; justify-content:flex-end; }
+        .admin-list-item { display:flex; align-items:center; padding:10px 0; border-bottom:1px solid #f0f1f3; gap:12px; }
+        .admin-list-item:last-child { border-bottom:none; }
+        .admin-email { flex:1; font-size:13px; font-weight:500; }
+        .admin-role { font-size:11px; padding:2px 8px; border-radius:4px; background:#eef2ff; color:#4338ca; }
+        .admin-role.super { background:#fef3c7; color:#92400e; }
+        .btn-admin-remove { padding:4px 10px; border-radius:4px; border:1px solid #ef4444; background:transparent; color:#ef4444; font-size:11px; cursor:pointer; font-family:inherit; }
+        .btn-admin-remove:hover { background:#fef2f2; }
+        .admin-add-row { display:flex; gap:8px; margin-top:12px; }
+        .admin-add-row input { flex:1; padding:8px 12px; border-radius:6px; border:1px solid #d1d5db; font-size:13px; font-family:inherit; outline:none; }
+        .admin-add-row input:focus { border-color:var(--accent); }
+        .btn-admin-add { padding:8px 16px; border-radius:6px; border:none; background:var(--accent); color:#fff; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; white-space:nowrap; }
+        .btn-admin-add:hover { background:var(--accent-light); }
+
+        .show-disc-toggle { display:flex; align-items:center; gap:4px; font-size:11px; color:#6b7280; margin-left:8px; cursor:pointer; user-select:none; }
+        .show-disc-toggle input { cursor:pointer; }
+    
+/* フォーマット保持翻訳のスタイル */
+.translated-page { font-family: 'Segoe UI', 'Hiragino Kaku Gothic ProN', sans-serif; color: #2d3748; line-height: 1.6; }
+.translated-page h2 { font-size: 20px; color: #1a365d; margin: 18px 0 10px; text-align: center; }
+.translated-page h3 { font-size: 16px; color: #1a365d; margin: 14px 0 8px; padding-left: 10px; border-left: 3px solid #2b6cb0; }
+.translated-page h4 { font-size: 14px; color: #2d3748; margin: 10px 0 6px; }
+.translated-page .doc-header { display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 2px solid #2b6cb0; margin-bottom: 16px; font-size: 13px; color: #4a5568; }
+.translated-page .doc-footer { border-top: 1px solid #e2e8f0; margin-top: 16px; padding-top: 6px; font-size: 11px; color: #a0aec0; display: flex; justify-content: space-between; }
+.translated-page .doc-table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; font-size: 13px; }
+.translated-page .doc-table th { background: #2b6cb0; color: #fff; padding: 8px 12px; text-align: center; font-weight: 600; }
+.translated-page .doc-table td { border: 1px solid #cbd5e0; padding: 7px 12px; text-align: center; }
+.translated-page .doc-table tr:nth-child(even) { background: #f7fafc; }
+.translated-page .doc-note { background: #f0fff4; border: 1px solid #c6f6d5; border-radius: 6px; padding: 12px 16px; margin: 12px 0; font-size: 13px; color: #276749; }
+</style>
+</head>
+<body>
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <div class="logo">EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB<span>ãããã¾</span></div>
+            <div class="subtitle">ç¤¾åå°ç¨ãã¼ã¿ãã¼ã¹</div>
+            <div class="desc">ãã®ãµã¤ãã¯ @shirokumapower.com<br>ã¡ã¼ã«ã¢ãã¬ã¹ããæã¡ã®æ¹ã®ã¿ãå©ç¨ããã ãã¾ãã</div>
+            <button class="btn-google" id="btnGoogleLogin" onclick="googleLogin()">
+                <svg viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.27-4.74 3.27-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                Googleã¢ã«ã¦ã³ãã§ã­ã°ã¤ã³
+            </button>
+            <div class="login-error" id="loginError"></div>
+            <div class="login-loading" id="loginLoading">èªè¨¼ä¸­...</div>
+        </div>
+    </div>
+
+    <header class="header">
+        <div class="header-logo">EXPO/å±ç¤ºä¼-ãã³ãã¬ããDB<span>ãããã¾</span></div>
+        <div class="header-search">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="searchInput" placeholder="ã¿ã¤ãã«ã»ã¡ã¼ã«ã¼ã»ãã¡ã¤ã«åã§æ¤ç´¢..." onkeydown="if(event.key==='Enter')handleSearch()" oninput="if(!this.value.trim()){searchQuery='';render();}">
+            <button class="btn-search" onclick="handleSearch()">æ¤ç´¢</button>
+        </div>
+        <div class="header-right">
+            <div class="header-user" id="headerUser" style="display:none">
+                <span class="header-user-email" id="headerEmail"></span>
+                <button class="btn-logout" onclick="logoutUser()">ã­ã°ã¢ã¦ã</button>
+            </div>
+            <div class="header-count" id="headerCount"></div>
+            <button class="btn-admin" id="btnAdminPanel" style="display:none" onclick="openAdminPanel()">âï¸ ç®¡ç</button>
+            <button class="btn-excel" onclick="exportExcel()">ð¥ Excelåºå</button>
+        </div>
+    </header>
+
+    <div class="layout">
+        <nav class="sidebar" id="sidebar"></nav>
+        <main class="main" id="main">
+            <div class="main-header">
+                <div class="main-title-area">
+                    <h2 class="main-title" id="mainTitle">ãã¹ã¦ã®ãã³ãã¬ãã</h2>
+                    <span class="main-count" id="mainCount"></span>
+                </div>
+                <div class="view-toggle">
+                    <button class="btn-toggle" id="btnCard" onclick="setView('card')">ð ã«ã¼ã</button>
+                    <button class="btn-toggle active" id="btnTable" onclick="setView('table')">ð ãã¼ãã«</button>
+                </div>
+            </div>
+            <div class="toolbar" id="toolbar"></div>
+            <div id="content"></div>
+        </main>
+    </div>
+
+    <!-- PDF Modal -->
+    <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+        <div class="modal" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title" id="modalTitle"></div>
+                <div class="modal-actions">
+                    <a class="modal-btn" id="modalDownload" href="#" target="_blank">æ°ããã¿ãã§éã</a>
+                    <button class="modal-btn translate" id="modalTranslate" onclick="translatePdf()">Googleç¿»è¨³ã§éã</button>
+                    <button class="modal-btn close" onclick="closeModal()">éãã</button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdfFrame" src=""></iframe>
+                <div class="translate-panel" id="translatePanel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Discontinue Modal -->
+    <div class="disc-modal-overlay" id="discModalOverlay" onclick="closeDiscModal()">
+        <div class="disc-modal" onclick="event.stopPropagation()">
+            <h3 id="discModalTitle">è£½åãå»æ­¢ãã</h3>
+            <div>
+                <label>å¯¾è±¡è£½å</label>
+                <input type="text" id="discProductName" readonly style="background:#f8f9fb;">
+            </div>
+            <div>
+                <label>å»æ­¢çç±</label>
+                <select id="discReason" onchange="toggleOtherReason()">
+                    <option value="">-- é¸æãã¦ãã ãã --</option>
+                    <option value="æ¬¡ä¸ä»£ã¢ãã«ã¸ç§»è¡">æ¬¡ä¸ä»£ã¢ãã«ã¸ç§»è¡</option>
+                    <option value="è²©å£²çµäº">è²©å£²çµäº</option>
+                    <option value="ã¡ã¼ã«ã¼å»æ­¢">ã¡ã¼ã«ã¼å»æ­¢</option>
+                    <option value="çµ±åã»å¸å">çµ±åã»å¸å</option>
+                    <option value="ãã®ä»">ãã®ä»</option>
+                </select>
+            </div>
+            <div id="discOtherReasonWrap" style="display:none">
+                <label>ãã®ä»ã®çç±</label>
+                <textarea id="discOtherReason" placeholder="å»æ­¢çç±ãå¥å..."></textarea>
+            </div>
+            <div>
+                <label>å¾ç¶è£½å (ä»»æ)</label>
+                <input type="text" id="discSuccessorSearch" placeholder="è£½ååã§æ¤ç´¢..." oninput="filterSuccessorList()">
+                <div id="discSuccessorList" style="max-height:150px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:6px;margin-top:4px;display:none;"></div>
+                <input type="hidden" id="discSuccessorId">
+                <div id="discSuccessorSelected" style="font-size:12px;color:#10b981;margin-top:4px;"></div>
+            </div>
+            <div class="disc-modal-actions">
+                <button class="btn-disc-cancel" onclick="closeDiscModal()">ã­ã£ã³ã»ã«</button>
+                <button class="btn-disc-confirm" id="discConfirmBtn" onclick="confirmDiscontinue()">â å»æ­¢ãã</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Modal -->
+    <div class="admin-modal-overlay" id="adminModalOverlay" onclick="closeAdminModal()">
+        <div class="admin-modal" onclick="event.stopPropagation()">
+            <div class="admin-modal-header">
+                <h3>âï¸ å»æ­¢æ¨©éã®ç®¡ç</h3>
+            </div>
+            <div class="admin-modal-body" id="adminModalBody">
+                <!-- filled dynamically -->
+            </div>
+            <div class="admin-modal-footer">
+                <button class="btn-disc-cancel" onclick="closeAdminModal()">éãã</button>
+            </div>
+        </div>
+    </div>
+
+<script>
+// === Auth & Config ===
+const ALLOWED_DOMAIN = "shirokumapower.com";
+const SUPABASE_URL = 'https://owbucmdtinvidsbfoyed.supabase.co';
+const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93YnVjbWR0aW52aWRzYmZveWVkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MzcyNTMsImV4cCI6MjA5MDExMzI1M30.YYtNv2FzhrBDnZDJgJbBOGw-kbNQyLRlbB3qH3Y15Y8';
+
+const sbClient = supabase.createClient(SUPABASE_URL, ANON_KEY);
+
+let allData = [];
+let currentCategory = null;
+let currentManufacturer = null;
+let searchQuery = '';
+let sortBy = 'title';
+let viewMode = 'table';
+let showDiscontinued = true;
+let isAdmin = false;
+let isSuperAdmin = false;
+let currentUserEmail = '';
+let discTargetId = null;
+
+const CATEGORY_ICONS = {
+    'BESSã»èé»æ± ':'ð','PCSã»ãã¯ã³ã³':'â¡','å¤ªé½åçºé»':'âï¸','é¢¨åçºé»':'ð',
+    'æ´ä¸é¢¨åã»æµ·äº':'ð¢','åå¤é»è¨­åã»é»æ°æ©å¨':'ð','EMSã»ç£è¦å¶å¾¡':'ð',
+    'æè¡åè­°æ¸ã»ä»æ§æ¸':'ð','èªè¨¼ã»è©¦é¨ã¬ãã¼ã':'â','é»æ°å³é¢ã»SLD':'ð',
+    'é¨åå³é¢ã»åçªè³æ':'ð©','é¨é³ã¬ãã¼ã':'ð','å®å¨ã»æ¶é²':'ð§¯',
+    'O&Mã»ã¡ã³ããã³ã¹':'ð§','å±ç¤ºä¼ã»EXPO':'ðï¸','ã¬ã¤ã¢ã¦ãã»éç½®å³':'ð',
+    'ãã®ä»':'ð','ã«ã¿ã­ã°':'ð'
+};
+const CATEGORY_CLASSES = {
+    'BESSã»èé»æ± ':'cat-bess','PCSã»ãã¯ã³ã³':'cat-pcs','ãã®ä»':'cat-other',
+    'å±ç¤ºä¼ã»EXPO':'cat-expo','èªè¨¼ã»è©¦é¨ã¬ãã¼ã':'cat-test','å¤ªé½åçºé»':'cat-solar',
+    'é¢¨åçºé»':'cat-wind','æ´ä¸é¢¨åã»æµ·äº':'cat-wind'
+};
+
+// === Auth functions ===
+async function checkAuth() {
+    var overlay = document.getElementById("loginOverlay");
+    var resp = await sbClient.auth.getSession();
+    var session = resp.data.session;
+    if (session && session.user) {
+        var email = session.user.email || "";
+        if (email.endsWith("@" + ALLOWED_DOMAIN)) {
+            overlay.style.display = "none";
+            document.getElementById("headerUser").style.display = "flex";
+            document.getElementById("headerEmail").textContent = email;
+            currentUserEmail = email;
+            await checkAdminStatus();
+            return true;
+        } else {
+            await sbClient.auth.signOut();
+            document.getElementById("loginError").textContent = email + " ã¯è¨±å¯ããã¦ãã¾ããã@" + ALLOWED_DOMAIN + " ã®ã¢ã«ã¦ã³ãã§ã­ã°ã¤ã³ãã¦ãã ããã";
+            document.getElementById("loginError").style.display = "block";
+        }
+    }
+    overlay.style.display = "flex";
+    return false;
+}
+
+async function checkAdminStatus() {
+    try {
+        var { data, error } = await sbClient.from('admin_users').select('*').eq('email', currentUserEmail);
+        if (data && data.length > 0) {
+            isAdmin = true;
+            isSuperAdmin = data[0].role === 'super_admin';
+            if (isSuperAdmin) {
+                document.getElementById('btnAdminPanel').style.display = 'flex';
+            }
+        }
+    } catch(e) { console.log('Admin check error:', e); }
+}
+
+async function googleLogin() {
+    document.getElementById("loginError").style.display = "none";
+    document.getElementById("loginLoading").style.display = "block";
+    var result = await sbClient.auth.signInWithOAuth({
+        provider: "google",
+        options: { redirectTo: window.location.origin + window.location.pathname, queryParams: { hd: ALLOWED_DOMAIN } }
+    });
+    if (result.error) {
+        document.getElementById("loginLoading").style.display = "none";
+        document.getElementById("loginError").textContent = "ã­ã°ã¤ã³ã¨ã©ã¼: " + result.error.message;
+        document.getElementById("loginError").style.display = "block";
+    }
+}
+
+async function logoutUser() {
+    await sbClient.auth.signOut();
+    document.getElementById("headerUser").style.display = "none";
+    document.getElementById("btnAdminPanel").style.display = "none";
+    document.getElementById("loginOverlay").style.display = "flex";
+    document.getElementById("loginError").style.display = "none";
+    isAdmin = false; isSuperAdmin = false; currentUserEmail = '';
+}
+
+sbClient.auth.onAuthStateChange(function(event, session) {
+    if (event === "SIGNED_IN" && session) { checkAuth(); }
+});
+
+// === Data ===
+async function fetchData() {
+    var authed = await checkAuth();
+    if (!authed) return;
+    const resp = await fetch(SUPABASE_URL + '/rest/v1/pamphlets?select=*&order=title', {
+        headers: { 'apikey': ANON_KEY, 'Authorization': 'Bearer ' + ANON_KEY }
+    });
+    allData = await resp.json();
+    document.getElementById('headerCount').textContent = allData.length + 'ä»¶ã®ãã³ãã¬ãã';
+    buildSidebar();
+    render();
+}
+
+// === Sidebar ===
+function buildSidebar() {
+    var cats = {};
+    var discCount = 0;
+    allData.forEach(function(r) {
+        cats[r.category] = (cats[r.category] || 0) + 1;
+        if (r.is_discontinued) discCount++;
+    });
+    var filteredCats = {};
+    if (searchQuery) {
+        var sq = searchQuery.toLowerCase();
+        allData.forEach(function(r) {
+            if ((r.title && r.title.toLowerCase().indexOf(sq) >= 0) ||
+                (r.manufacturer && r.manufacturer.toLowerCase().indexOf(sq) >= 0) ||
+                (r.filename && r.filename.toLowerCase().indexOf(sq) >= 0) ||
+                (r.tags && r.tags.some(function(t) { return t.toLowerCase().indexOf(sq) >= 0; }))) {
+                filteredCats[r.category] = (filteredCats[r.category] || 0) + 1;
+            }
+        });
+    }
+    var sorted = Object.entries(cats).sort(function(a, b) { return b[1] - a[1]; });
+    var html = '<div class="sidebar-title">ã«ãã´ãª</div>';
+    var totalSearchCount = searchQuery ? Object.values(filteredCats).reduce(function(a,b){return a+b;}, 0) : 0;
+    var allSearchLabel = searchQuery ? '<span class="sidebar-search-count">(' + totalSearchCount + ')</span>' : '';
+    html += '<div class="sidebar-item ' + (!currentCategory ? 'active' : '') + '" onclick="selectCategory(null)"><span class="sidebar-icon">ð</span>ãã¹ã¦' + allSearchLabel + '<span class="sidebar-count">' + allData.length + '</span></div>';
+    sorted.forEach(function(entry) {
+        var cat = entry[0], count = entry[1];
+        var icon = CATEGORY_ICONS[cat] || 'ð';
+        var active = currentCategory === cat ? 'active' : '';
+        var searchCount = searchQuery && filteredCats[cat] ? '<span class="sidebar-search-count">(' + filteredCats[cat] + ')</span>' : '';
+        html += '<div class="sidebar-item ' + active + '" onclick="selectCategory(\'' + cat.replace(/'/g, "\\'") + '\')"><span class="sidebar-icon">' + icon + '</span>' + esc(cat) + searchCount + '<span class="sidebar-count">' + count + '</span></div>';
+    });
+    if (discCount > 0) {
+        html += '<div class="sidebar-divider"></div>';
+        html += '<div class="sidebar-item ' + (currentCategory === '__discontinued' ? 'active' : '') + '" onclick="selectCategory(\'__discontinued\')"><span class="sidebar-icon">ð«</span>å»æ­¢æ¸ã¿<span class="sidebar-count" style="background:#ef4444">' + discCount + '</span></div>';
+    }
+    document.getElementById('sidebar').innerHTML = html;
+}
+
+function selectCategory(cat) { currentCategory = cat; currentManufacturer = null; buildSidebar(); render(); }
+
+function getFiltered() {
+    var data = allData.slice();
+    if (currentCategory === '__discontinued') {
+        data = data.filter(function(r) { return r.is_discontinued; });
+    } else {
+        if (currentCategory) data = data.filter(function(r) { return r.category === currentCategory; });
+        if (!showDiscontinued) data = data.filter(function(r) { return !r.is_discontinued; });
+    }
+    if (currentManufacturer) data = data.filter(function(r) { return r.manufacturer === currentManufacturer; });
+    if (searchQuery) {
+        var q = searchQuery.toLowerCase();
+        data = data.filter(function(r) {
+            return (r.title && r.title.toLowerCase().indexOf(q) >= 0) ||
+                   (r.filename && r.filename.toLowerCase().indexOf(q) >= 0) ||
+                   (r.manufacturer && r.manufacturer.toLowerCase().indexOf(q) >= 0) ||
+                   (r.tags && r.tags.some(function(t) { return t.toLowerCase().indexOf(q) >= 0; }));
+        });
+    }
+    if (sortBy === 'title') data.sort(function(a, b) { return (a.title || '').localeCompare(b.title || '', 'ja'); });
+    else if (sortBy === 'size_desc') data.sort(function(a, b) { return (b.file_size || 0) - (a.file_size || 0); });
+    else if (sortBy === 'size_asc') data.sort(function(a, b) { return (a.file_size || 0) - (b.file_size || 0); });
+    else if (sortBy === 'manufacturer') data.sort(function(a, b) { return (a.manufacturer || 'zzz').localeCompare(b.manufacturer || 'zzz', 'ja'); });
+    return data;
+}
+
+function render() {
+    buildSidebar();
+    var data = getFiltered();
+    var title = currentCategory === '__discontinued' ? 'å»æ­¢æ¸ã¿è£½å' : (currentCategory || 'ãã¹ã¦ã®ãã³ãã¬ãã');
+    var icon = currentCategory === '__discontinued' ? 'ð«' : (currentCategory ? (CATEGORY_ICONS[currentCategory] || 'ð') : 'ð');
+    document.getElementById('mainTitle').textContent = icon + ' ' + title;
+    document.getElementById('mainCount').textContent = data.length + 'ä»¶' + (searchQuery ? ' (æ¤ç´¢: "' + searchQuery + '")' : '');
+
+    // Toolbar
+    var toolHtml = '';
+    var mfrs = {};
+    var base = currentCategory === '__discontinued'
+        ? allData.filter(function(r) { return r.is_discontinued; })
+        : (currentCategory ? allData.filter(function(r) { return r.category === currentCategory; }) : allData);
+    base.forEach(function(r) { if (r.manufacturer) mfrs[r.manufacturer] = (mfrs[r.manufacturer] || 0) + 1; });
+    if (Object.keys(mfrs).length > 0) {
+        toolHtml += '<span class="toolbar-label">ã¡ã¼ã«ã¼:</span>';
+        toolHtml += '<button class="btn-filter ' + (!currentManufacturer ? 'active' : '') + '" onclick="filterMfr(null)">ãã¹ã¦</button>';
+        Object.entries(mfrs).sort(function(a, b) { return b[1] - a[1]; }).forEach(function(entry) {
+            var mfr = entry[0];
+            var active = currentManufacturer === mfr ? 'active' : '';
+            toolHtml += '<button class="btn-filter ' + active + '" onclick="filterMfr(\'' + mfr.replace(/'/g, "\\'") + '\')">' + esc(mfr) + '</button>';
+        });
+    }
+    toolHtml += '<select class="sort-select" onchange="changeSort(this.value)">';
+    toolHtml += '<option value="title"' + (sortBy==='title'?' selected':'') + '>ã¿ã¤ãã«é </option>';
+    toolHtml += '<option value="size_desc"' + (sortBy==='size_desc'?' selected':'') + '>ãµã¤ãº (å¤§âå°)</option>';
+    toolHtml += '<option value="size_asc"' + (sortBy==='size_asc'?' selected':'') + '>ãµã¤ãº (å°âå¤§)</option>';
+    toolHtml += '<option value="manufacturer"' + (sortBy==='manufacturer'?' selected':'') + '>ã¡ã¼ã«ã¼é </option>';
+    toolHtml += '</select>';
+    if (currentCategory !== '__discontinued') {
+        toolHtml += '<label class="show-disc-toggle"><input type="checkbox" ' + (showDiscontinued ? 'checked' : '') + ' onchange="toggleShowDiscontinued(this.checked)"> å»æ­¢æ¸ã¿ãè¡¨ç¤º</label>';
+    }
+    document.getElementById('toolbar').innerHTML = toolHtml;
+
+    if (data.length === 0) {
+        document.getElementById('content').innerHTML = '<div class="empty-state"><p>è©²å½ãããã³ãã¬ãããè¦ã¤ããã¾ããã§ãã</p></div>';
+        return;
+    }
+    if (viewMode === 'table') { renderTable(data); } else { renderCards(data); }
+}
+
+function renderTable(data) {
+    var html = '<div class="table-container"><table><thead><tr>';
+    html += '<th style="width:44px;text-align:center">#</th>';
+    html += '<th>ã¿ã¤ãã« <span class="sort-icon">â¼</span></th>';
+    html += '<th>ã«ãã´ãª</th>';
+    html += '<th>ã¡ã¼ã«ã¼ <span class="sort-icon">â¼</span></th>';
+    html += '<th>ã¿ã°</th>';
+    html += '<th>ãµã¤ãº <span class="sort-icon">â¼</span></th>';
+    html += '<th style="width:56px">PDF</th>';
+    if (isAdmin) html += '<th style="width:70px">æä½</th>';
+    html += '</tr></thead><tbody>';
+    data.forEach(function(r, i) {
+        var catClass = CATEGORY_CLASSES[r.category] || 'cat-default';
+        var tags = (r.tags || []).map(function(t) { return '<span class="cell-tag">' + esc(t) + '</span>'; }).join('');
+        var rowClass = r.is_discontinued ? ' class="row-discontinued"' : '';
+        var discBadge = r.is_discontinued ? '<span class="badge-discontinued">å»æ­¢</span>' : '';
+        var discInfo = '';
+        if (r.is_discontinued) {
+            if (r.discontinued_reason) discInfo += '<div class="disc-reason">çç±: ' + esc(r.discontinued_reason) + '</div>';
+            if (r.successor_product_id) {
+                var successor = allData.find(function(s) { return s.id === r.successor_product_id; });
+                if (successor) discInfo += '<div class="disc-successor" onclick="event.stopPropagation();openPdf(\'' + escAttr(successor.storage_url) + '\',\'' + escAttr(successor.title) + '\')">å¾ç¶: ' + esc(successor.title) + '</div>';
+            }
+        }
+        html += '<tr' + rowClass + '>';
+        html += '<td class="cell-no">' + (i + 1) + '</td>';
+        html += '<td><span class="cell-title" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">' + (searchQuery ? highlightText(r.title, searchQuery) : esc(r.title)) + '</span>' + discBadge + discInfo + '</td>';
+        html += '<td><span class="cell-category ' + catClass + '">' + esc(r.category) + '</span></td>';
+        html += '<td class="cell-mfr">' + (r.manufacturer ? (searchQuery ? highlightText(r.manufacturer, searchQuery) : esc(r.manufacturer)) : 'â') + '</td>';
+        html += '<td>' + tags + '</td>';
+        html += '<td class="cell-size">' + formatSize(r.file_size) + '</td>';
+        html += '<td><span class="cell-pdf" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">ð éã</span></td>';
+        if (isAdmin) {
+            if (r.is_discontinued) {
+                html += '<td><button class="btn-disc btn-disc-undo" onclick="event.stopPropagation();undoDiscontinue(' + r.id + ')">â»ï¸ å¾©æ´»</button></td>';
+            } else {
+                html += '<td><button class="btn-disc" onclick="event.stopPropagation();openDiscModal(' + r.id + ')">â å»æ­¢</button></td>';
+            }
+        }
+        html += '</tr>';
+    });
+    html += '</tbody></table></div>';
+    document.getElementById('content').innerHTML = html;
+}
+
+function renderCards(data) {
+    var html = '<div class="cards">';
+    data.forEach(function(r) {
+        var size = formatSize(r.file_size);
+        var mfr = r.manufacturer ? '<span class="card-mfr">' + esc(r.manufacturer) + '</span>' : '';
+        var tags = (r.tags || []).map(function(t) { return '<span class="card-tag">' + esc(t) + '</span>'; }).join('');
+        var catTag = '<span class="card-tag">' + esc(r.category) + '</span>';
+        var cardClass = r.is_discontinued ? 'card card-discontinued' : 'card';
+        var discBadge = r.is_discontinued ? '<span class="badge-discontinued-card">å»æ­¢</span> ' : '';
+        var discInfo = '';
+        if (r.is_discontinued && r.discontinued_reason) {
+            discInfo = '<div class="disc-reason">çç±: ' + esc(r.discontinued_reason) + '</div>';
+        }
+        var adminBtn = '';
+        if (isAdmin) {
+            if (r.is_discontinued) {
+                adminBtn = '<button class="btn-disc btn-disc-undo" onclick="event.stopPropagation();undoDiscontinue(' + r.id + ')" style="margin-top:8px">â»ï¸ å¾©æ´»</button>';
+            } else {
+                adminBtn = '<button class="btn-disc" onclick="event.stopPropagation();openDiscModal(' + r.id + ')" style="margin-top:8px">â å»æ­¢</button>';
+            }
+        }
+        html += '<div class="' + cardClass + '" onclick="openPdf(\'' + escAttr(r.storage_url) + '\',\'' + escAttr(r.title) + '\')">';
+        html += '<div class="card-title">' + discBadge + esc(r.title) + '</div>';
+        html += '<div class="card-meta">' + catTag + mfr + tags + '</div>';
+        html += discInfo;
+        html += '<div class="card-info"><span>ð ' + size + '</span></div>';
+        html += adminBtn;
+        html += '</div>';
+    });
+    html += '</div>';
+    document.getElementById('content').innerHTML = html;
+}
+
+// === View & Filter functions ===
+function setView(mode) {
+    viewMode = mode;
+    document.getElementById('btnCard').className = 'btn-toggle' + (mode === 'card' ? ' active' : '');
+    document.getElementById('btnTable').className = 'btn-toggle' + (mode === 'table' ? ' active' : '');
+    render();
+}
+function filterMfr(mfr) { currentManufacturer = mfr; render(); }
+function changeSort(val) { sortBy = val; render(); }
+function handleSearch() { searchQuery = document.getElementById('searchInput').value.trim(); render(); }
+function toggleShowDiscontinued(checked) { showDiscontinued = checked; render(); }
+
+function highlightText(text, query) {
+    if (!query || !text) return esc(text);
+    var escaped = esc(text);
+    var q = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    var re = new RegExp('(' + q + ')', 'gi');
+    return escaped.replace(re, '<span class="search-highlight">$1</span>');
+}
+
+// === PDF Modal ===
+function openPdf(url, title) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('pdfFrame').src = url;
+    document.getElementById('modalDownload').href = url;
+    document.getElementById('modalOverlay').classList.add('active');
+    document.body.style.overflow = 'hidden';
+}
+function closeModal(e) {
+    if (e && e.target !== document.getElementById('modalOverlay')) return;
+    document.getElementById('modalOverlay').classList.remove('active');
+    document.getElementById('pdfFrame').src = '';
+    document.getElementById('translatePanel').style.display = 'none';
+    document.getElementById('pdfFrame').style.display = '';
+    document.getElementById('modalTranslate').textContent = 'Googleç¿»è¨³ã§éã';
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeModal(); closeDiscModal(); closeAdminModal(); } });
+
+async function translatePdf(url) {
+  var panel = document.getElementById('visionPanel');
+  if (!panel) {
+    panel = document.createElement('div');
+    panel.id = 'visionPanel';
+    panel.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.85);z-index:10000;overflow-y:auto;padding:20px;';
+    document.body.appendChild(panel);
+  }
+
+  var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+  header += '<div style="display:flex;align-items:center;gap:12px;">';
+  header += '<span style="color:#fff;font-size:18px;font-weight:700;">📄 フォーマット保持翻訳</span>';
+  header += '<button onclick="switchTranslateMode()" style="background:#4a5568;color:#fff;border:none;padding:4px 12px;border-radius:4px;cursor:pointer;font-size:12px;" title="従来のテキスト翻訳に切り替え">テキスト版に切替</button>';
+  header += '</div>';
+  header += '<button onclick="this.parentElement.parentElement.remove()" style="background:#e53e3e;color:#fff;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-weight:600;">閉じる</button>';
+  header += '</div>';
+
+  panel.innerHTML = header + '<div id="visionPages" style="max-width:840px;margin:0 auto;"><div style="color:#fff;text-align:center;padding:40px;">⏳ PDF読み込み中...</div></div>';
+
+  try {
+    var pdf = await pdfjsLib.getDocument(url).promise;
+    var container = document.getElementById('visionPages');
+    container.innerHTML = '';
+
+    for (var i = 1; i <= pdf.numPages; i++) {
+      var pageDiv = document.createElement('div');
+      pageDiv.id = 'vpage-' + i;
+      pageDiv.style.cssText = 'background:#fff;border-radius:8px;padding:32px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,.15);';
+      pageDiv.innerHTML = '<div style="text-align:center;padding:30px;color:#718096;">⏳ ページ ' + i + ' / ' + pdf.numPages + ' を翻訳中...</div>';
+      container.appendChild(pageDiv);
+
+      var page = await pdf.getPage(i);
+      var viewport = page.getViewport({ scale: 2.0 });
+      var canvas = document.createElement('canvas');
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+      var ctx = canvas.getContext('2d');
+      await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+      var base64 = canvas.toDataURL('image/png').split(',')[1];
+
+      var res = await fetch('/.netlify/functions/translate-vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          image: base64,
+          pageNum: i,
+          totalPages: pdf.numPages,
+          targetLang: 'ja'
+        })
+      });
+
+      if (!res.ok) {
+        var errText = await res.text();
+        pageDiv.innerHTML = '<div style="color:#e53e3e;padding:16px;">❌ ページ ' + i + ' の翻訳エラー: ' + errText + '</div>';
+        continue;
+      }
+
+      var data = await res.json();
+
+      pageDiv.innerHTML = '<div class="translated-page">' + data.html + '</div>'
+        + '<div style="text-align:right;color:#a0aec0;font-size:11px;margin-top:8px;border-top:1px solid #e2e8f0;padding-top:6px;">'
+        + i + ' / ' + pdf.numPages + '</div>';
+    }
+  } catch (err) {
+    document.getElementById('visionPages').innerHTML =
+      '<div style="color:#fc8181;text-align:center;padding:40px;">❌ エラー: ' + err.message + '</div>';
+  }
+}
+
+// === Excel Export ===
+function exportExcel() {
+    var data = getFiltered();
+    var rows = data.map(function(r, i) {
+        return {
+            '#': i + 1, 'ã¿ã¤ãã«': r.title || '', 'ã«ãã´ãª': r.category || '',
+            'ã¡ã¼ã«ã¼': r.manufacturer || '', 'ã¿ã°': (r.tags || []).join(', '),
+            'ãã¡ã¤ã«ãµã¤ãº': formatSize(r.file_size), 'ãã¡ã¤ã«å': r.filename || '',
+            'PDF URL': r.storage_url || '', 'å»æ­¢': r.is_discontinued ? 'å»æ­¢æ¸ã¿' : '',
+            'å»æ­¢çç±': r.discontinued_reason || ''
+        };
+    });
+    var ws = XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{wch:5},{wch:50},{wch:20},{wch:15},{wch:20},{wch:12},{wch:40},{wch:60},{wch:10},{wch:20}];
+    var wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'ãã³ãã¬ããä¸è¦§');
+    var catName = currentCategory === '__discontinued' ? 'å»æ­¢æ¸ã¿' : (currentCategory || 'ãã¹ã¦');
+    XLSX.writeFile(wb, 'ãã³ãã¬ããDB_' + catName + '.xlsx');
+}
+
+// === Discontinue functions ===
+function openDiscModal(id) {
+    discTargetId = id;
+    var item = allData.find(function(r) { return r.id === id; });
+    if (!item) return;
+    document.getElementById('discProductName').value = item.title;
+    document.getElementById('discReason').value = '';
+    document.getElementById('discOtherReason').value = '';
+    document.getElementById('discOtherReasonWrap').style.display = 'none';
+    document.getElementById('discSuccessorSearch').value = '';
+    document.getElementById('discSuccessorId').value = '';
+    document.getElementById('discSuccessorSelected').textContent = '';
+    document.getElementById('discSuccessorList').style.display = 'none';
+    document.getElementById('discModalTitle').textContent = 'è£½åãå»æ­¢ãã';
+    document.getElementById('discConfirmBtn').textContent = 'â å»æ­¢ãã';
+    document.getElementById('discConfirmBtn').className = 'btn-disc-confirm';
+    document.getElementById('discModalOverlay').classList.add('active');
+}
+
+function closeDiscModal() { document.getElementById('discModalOverlay').classList.remove('active'); discTargetId = null; }
+
+function toggleOtherReason() {
+    var val = document.getElementById('discReason').value;
+    document.getElementById('discOtherReasonWrap').style.display = val === 'ãã®ä»' ? 'block' : 'none';
+}
+
+function filterSuccessorList() {
+    var query = document.getElementById('discSuccessorSearch').value.trim().toLowerCase();
+    var listEl = document.getElementById('discSuccessorList');
+    if (!query) { listEl.style.display = 'none'; return; }
+    var matches = allData.filter(function(r) {
+        return r.id !== discTargetId && !r.is_discontinued && r.title && r.title.toLowerCase().indexOf(query) >= 0;
+    }).slice(0, 20);
+    if (matches.length === 0) { listEl.style.display = 'none'; return; }
+    var html = '';
+    matches.forEach(function(r) {
+        html += '<div style="padding:6px 10px;cursor:pointer;font-size:12px;border-bottom:1px solid #f0f1f3;" onmouseover="this.style.background=\'#fef7f0\'" onmouseout="this.style.background=\'#fff\'" onclick="selectSuccessor(' + r.id + ',\'' + escAttr(r.title) + '\')">' + esc(r.title) + ' <span style="color:#9ca3af">(' + esc(r.manufacturer || '') + ')</span></div>';
+    });
+    listEl.innerHTML = html;
+    listEl.style.display = 'block';
+}
+
+function selectSuccessor(id, title) {
+    document.getElementById('discSuccessorId').value = id;
+    document.getElementById('discSuccessorSearch').value = '';
+    document.getElementById('discSuccessorList').style.display = 'none';
+    document.getElementById('discSuccessorSelected').textContent = 'â ' + title;
+}
+
+async function confirmDiscontinue() {
+    if (!discTargetId) return;
+    var reason = document.getElementById('discReason').value;
+    if (!reason) { alert('å»æ­¢çç±ãé¸æãã¦ãã ããã'); return; }
+    if (reason === 'ãã®ä»') {
+        var otherReason = document.getElementById('discOtherReason').value.trim();
+        if (!otherReason) { alert('ãã®ä»ã®çç±ãå¥åãã¦ãã ããã'); return; }
+        reason = otherReason;
+    }
+    var successorId = document.getElementById('discSuccessorId').value;
+    var updateData = {
+        is_discontinued: true,
+        discontinued_reason: reason,
+        discontinued_at: new Date().toISOString(),
+        discontinued_by: currentUserEmail
+    };
+    if (successorId) updateData.successor_product_id = parseInt(successorId);
+
+    var { error } = await sbClient.from('pamphlets').update(updateData).eq('id', discTargetId);
+    if (error) { alert('ã¨ã©ã¼: ' + error.message); return; }
+
+    // Update local data
+    var item = allData.find(function(r) { return r.id === discTargetId; });
+    if (item) { Object.assign(item, updateData); }
+    closeDiscModal();
+    render();
+}
+
+async function undoDiscontinue(id) {
+    if (!confirm('ãã®è£½åã®å»æ­¢ãè§£é¤ãã¾ããï¼')) return;
+    var { error } = await sbClient.from('pamphlets').update({
+        is_discontinued: false, discontinued_reason: null,
+        successor_product_id: null, discontinued_at: null, discontinued_by: null
+    }).eq('id', id);
+    if (error) { alert('ã¨ã©ã¼: ' + error.message); return; }
+    var item = allData.find(function(r) { return r.id === id; });
+    if (item) { item.is_discontinued = false; item.discontinued_reason = null; item.successor_product_id = null; item.discontinued_at = null; item.discontinued_by = null; }
+    render();
+}
+
+// === Admin Panel ===
+async function openAdminPanel() {
+    document.getElementById('adminModalOverlay').classList.add('active');
+    await loadAdminList();
+}
+function closeAdminModal() { document.getElementById('adminModalOverlay').classList.remove('active'); }
+
+async function loadAdminList() {
+    var body = document.getElementById('adminModalBody');
+    body.innerHTML = '<p style="color:#9ca3af;text-align:center;padding:20px">èª­ã¿è¾¼ã¿ä¸­...</p>';
+    var { data, error } = await sbClient.from('admin_users').select('*').order('created_at');
+    if (error) { body.innerHTML = '<p style="color:#ef4444;padding:20px">ã¨ã©ã¼: ' + esc(error.message) + '</p>'; return; }
+    var html = '<div style="margin-bottom:12px;font-size:12px;color:#6b7280;">å»æ­¢æä½ã®æ¨©éãæã¤ã¦ã¼ã¶ã¼ä¸è¦§</div>';
+    (data || []).forEach(function(u) {
+        var roleClass = u.role === 'super_admin' ? 'admin-role super' : 'admin-role';
+        var roleLabel = u.role === 'super_admin' ? 'ã¹ã¼ãã¼ç®¡çè' : 'å»æ­¢ç®¡çè';
+        var removeBtn = u.email !== currentUserEmail ? '<button class="btn-admin-remove" onclick="removeAdmin(' + u.id + ',\'' + escAttr(u.email) + '\')">åé¤</button>' : '<span style="font-size:11px;color:#9ca3af">èªå</span>';
+        html += '<div class="admin-list-item"><span class="admin-email">' + esc(u.email) + '</span><span class="' + roleClass + '">' + roleLabel + '</span>' + removeBtn + '</div>';
+    });
+    html += '<div class="admin-add-row"><input type="email" id="newAdminEmail" placeholder="ã¡ã¼ã«ã¢ãã¬ã¹ (@shirokumapower.com)"><button class="btn-admin-add" onclick="addAdmin()">è¿½å </button></div>';
+    body.innerHTML = html;
+}
+
+async function addAdmin() {
+    var email = document.getElementById('newAdminEmail').value.trim();
+    if (!email || !email.endsWith('@' + ALLOWED_DOMAIN)) { alert('@' + ALLOWED_DOMAIN + ' ã®ã¡ã¼ã«ã¢ãã¬ã¹ãå¥åãã¦ãã ããã'); return; }
+    var { error } = await sbClient.from('admin_users').insert({ email: email, role: 'discontinue_admin', created_by: currentUserEmail });
+    if (error) {
+        if (error.message && error.message.indexOf('duplicate') >= 0) { alert('ãã®ã¦ã¼ã¶ã¼ã¯æ¢ã«ç»é²ããã¦ãã¾ãã'); }
+        else { alert('ã¨ã©ã¼: ' + error.message); }
+        return;
+    }
+    await loadAdminList();
+}
+
+async function removeAdmin(id, email) {
+    if (!confirm(email + ' ã®å»æ­¢æ¨©éãåé¤ãã¾ããï¼')) return;
+    var { error } = await sbClient.from('admin_users').delete().eq('id', id);
+    if (error) { alert('ã¨ã©ã¼: ' + error.message); return; }
+    await loadAdminList();
+}
+
+// === Utilities ===
+function formatSize(bytes) {
+    if (!bytes) return 'ä¸æ';
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1048576).toFixed(1) + ' MB';
+}
+function esc(s) { if (!s) return ''; return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function escAttr(s) { if (!s) return ''; return s.replace(/\\/g,'\\\\').replace(/'/g,"\\'").replace(/"/g,'\\"'); }
+
+// === Init ===
+fetchData();
+</script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EXPO/展示会-パンフレットDB しろくま</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
