@@ -688,7 +688,7 @@ async function translatePdf(url) {
   panel.innerHTML = header + '<div id="visionPages" style="max-width:840px;margin:0 auto;"><div style="color:#fff;text-align:center;padding:40px;">' + String.fromCodePoint(0x23F3) + ' PDF読み込み中...</div></div>';
 
   try {
-    var pdf = await pdfjsLib.getDocument(url).promise;
+    var pdf = await pdfjsLib.getDocument({url: url}).promise;
     var container = document.getElementById('visionPages');
     container.innerHTML = '';
 
