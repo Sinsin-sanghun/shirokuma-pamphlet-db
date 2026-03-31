@@ -18,7 +18,7 @@
             --sidebar-muted: #6b7280;
             --accent: #e67e22;
             --accent-light: #f39c12;
-            --sidebar-width: 230px;
+            --sidebar-width: 230px;h
             --header-height: 56px;
         }
         * { margin:0; padding:0; box-sizing:border-box; }
@@ -669,6 +669,11 @@ function closeModal(e) {
 document.addEventListener('keydown', function(e) { if (e.key === 'Escape') { closeModal(); closeDiscModal(); closeAdminModal(); } });
 
 async function translatePdf(url) {
+      // URLが渡されない場合、現在表示中のPDFのURLを取得
+      if (!url) {
+        var frame = document.getElementById('pdfFrame');
+        if (frame) url = frame.src;
+      }
   var panel = document.getElementById('visionPanel');
   if (!panel) {
     panel = document.createElement('div');
